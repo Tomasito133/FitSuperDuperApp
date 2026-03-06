@@ -39,9 +39,8 @@ export default function WorkoutPage() {
   const [completedSets, setCompletedSets] = useState<number[]>([]);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [editingTimer, setEditingTimer] = useState<number | null>(null);
-  const [swipingSet, setSwipingSet] = useState<number | null>(null);
-  const [swipeOffset, setSwipeOffset] = useState(0);
-  const [touchStartX, setTouchStartX] = useState(0);
+  const [swipeOffsets, setSwipeOffsets] = useState<Record<number, number>>({});
+  const [touchStartX, setTouchStartX] = useState<Record<number, number>>({});
   const [exercises, setExercises] = useState<Exercise[]>([
     {
       id: "1",
@@ -143,33 +142,36 @@ export default function WorkoutPage() {
       }
       return newExercises;
     });
-    setSwipingSet(null);
-    setSwipeOffset(0);
+    // Очищаем offset удаленного подхода
+    setSwipeOffsets((prev) => {
+      const newOffsets = { ...prev };
+      delete newOffsets[setId];
+      return newOffsets;
+    });
   };
 
   const handleTouchStart = (e: React.TouchEvent, setId: number) => {
     if (isSetCompleted(setId)) return;
-    setSwipingSet(setId);
-    setTouchStartX(e.touches[0].clientX);
-    setSwipeOffset(0);
+    setTouchStartX((prev) => ({ ...prev, [setId]: e.touches[0].clientX }));
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (swipingSet === null) return;
+  const handleTouchMove = (e: React.TouchEvent, setId: number) => {
+    if (isSetCompleted(setId)) return;
     const currentX = e.touches[0].clientX;
-    const diff = touchStartX - currentX;
-    if (diff > 0 && diff < 120) {
-      setSwipeOffset(diff);
+    const startX = touchStartX[setId] || currentX;
+    const diff = startX - currentX;
+    if (diff > 0) {
+      setSwipeOffsets((prev) => ({ ...prev, [setId]: Math.min(diff, 120) }));
     }
   };
 
-  const handleTouchEnd = () => {
-    if (swipingSet === null) return;
-    if (swipeOffset > 80) {
-      deleteSet(swipingSet);
+  const handleTouchEnd = (setId: number) => {
+    const offset = swipeOffsets[setId] || 0;
+    if (offset > 60) {
+      deleteSet(setId);
     } else {
-      setSwipeOffset(0);
-      setSwipingSet(null);
+      // Анимация возврата
+      setSwipeOffsets((prev) => ({ ...prev, [setId]: 0 }));
     }
   };
 
@@ -246,22 +248,28 @@ export default function WorkoutPage() {
         {currentExercise.sets.map((set, index) => {
           const isCurrent = index === currentSetIndex;
           const isCompleted = isSetCompleted(set.id);
-          const isSwiping = swipingSet === set.id;
+          const offset = swipeOffsets[set.id] || 0;
+          const isSwiping = offset > 0;
           
           return (
             <div key={set.id} className="relative">
               {/* Background delete layer */}
               <div 
-                className={`absolute inset-0 rounded-lg flex items-center justify-end pr-6 transition-opacity ${
-                  isSwiping && swipeOffset > 20 ? "opacity-100" : "opacity-0"
-                }`}
-                style={{ backgroundColor: swipeOffset > 80 ? "#ef4444" : "#7f1d1d" }}
+                className="absolute inset-0 rounded-lg flex items-center justify-end pr-6"
+                style={{ 
+                  backgroundColor: offset > 60 ? "#dc2626" : "#7f1d1d",
+                  opacity: isSwiping ? 1 : 0,
+                  transition: "opacity 0.1s"
+                }}
               >
-                <Trash2 className="w-6 h-6 text-white" />
+                <div className="flex items-center gap-2 text-white">
+                  <span className="text-xs">Удалить</span>
+                  <Trash2 className="w-5 h-5" />
+                </div>
               </div>
               
               <Card
-                className={`border-0 transition-transform ${
+                className={`border-0 ${
                   isCurrent 
                     ? "bg-zinc-700/50" 
                     : isCompleted 
@@ -269,12 +277,12 @@ export default function WorkoutPage() {
                       : "bg-zinc-800"
                 }`}
                 style={{
-                  transform: isSwiping ? `translateX(-${swipeOffset}px)` : "translateX(0)",
-                  transition: isSwiping ? "none" : "transform 0.2s ease-out"
+                  transform: `translateX(-${offset}px)`,
+                  transition: "transform 0.2s ease-out"
                 }}
                 onTouchStart={(e) => handleTouchStart(e, set.id)}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
+                onTouchMove={(e) => handleTouchMove(e, set.id)}
+                onTouchEnd={() => handleTouchEnd(set.id)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
