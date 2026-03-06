@@ -12,7 +12,6 @@ import {
   MoreHorizontal,
   BookOpen,
   Plus,
-  Minus,
   RotateCcw,
   Trash2,
 } from "lucide-react";
@@ -263,55 +262,31 @@ export default function WorkoutPage() {
                 </span>
 
                 <div className="flex items-center gap-0.5 flex-1 justify-center">
-                  <button
-                    onClick={() => updateSet(set.id, "weight", -5)}
-                    className="p-1.5 hover:bg-gray-100 rounded-lg"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <div className="text-center w-[55px]">
+                  <div className="text-center w-[60px]">
                     <input
                       type="number"
                       value={set.weight}
                       onChange={(e) =>
                         setSetValue(set.id, "weight", parseInt(e.target.value) || 0)
                       }
-                      className="w-full text-lg font-bold text-center bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-orange-500 focus:outline-none"
+                      className="w-full text-xl font-bold text-center bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-orange-500 focus:outline-none"
                     />
                     <span className="text-xs text-gray-500">kg</span>
                   </div>
-                  <button
-                    onClick={() => updateSet(set.id, "weight", 5)}
-                    className="p-1.5 hover:bg-gray-100 rounded-lg"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
 
-                  <span className="text-gray-400 mx-0.5">×</span>
+                  <span className="text-gray-400 mx-1">×</span>
 
-                  <button
-                    onClick={() => updateSet(set.id, "reps", -1)}
-                    className="p-1.5 hover:bg-gray-100 rounded-lg"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <div className="text-center w-[45px]">
+                  <div className="text-center w-[50px]">
                     <input
                       type="number"
                       value={set.reps}
                       onChange={(e) =>
                         setSetValue(set.id, "reps", parseInt(e.target.value) || 0)
                       }
-                      className="w-full text-lg font-bold text-center bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-orange-500 focus:outline-none"
+                      className="w-full text-xl font-bold text-center bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-orange-500 focus:outline-none"
                     />
                     <span className="text-xs text-gray-500">reps</span>
                   </div>
-                  <button
-                    onClick={() => updateSet(set.id, "reps", 1)}
-                    className="p-1.5 hover:bg-gray-100 rounded-lg"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
