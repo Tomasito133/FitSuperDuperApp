@@ -141,15 +141,14 @@ export default function WorkoutPage() {
   const addSet = () => {
     setExercises((prev) => {
       const newExercises = [...prev];
-      const lastSet =
-        newExercises[currentExerciseIndex].sets[
-          newExercises[currentExerciseIndex].sets.length - 1
-        ];
-      newExercises[currentExerciseIndex].sets.push({
+      const sets = newExercises[currentExerciseIndex].sets;
+      const lastSet = sets[sets.length - 1];
+      
+      sets.push({
         id: Date.now(),
-        weight: lastSet.weight,
-        reps: lastSet.reps,
-        restTime: lastSet.restTime,
+        weight: lastSet?.weight ?? 0,
+        reps: lastSet?.reps ?? 0,
+        restTime: lastSet?.restTime ?? 60,
         completed: false,
       });
       return newExercises;
