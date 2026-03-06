@@ -39,8 +39,6 @@ export default function WorkoutPage() {
   const [completedSets, setCompletedSets] = useState<number[]>([]);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [editingTimer, setEditingTimer] = useState<number | null>(null);
-  const [swipeOffsets, setSwipeOffsets] = useState<Record<number, number>>({});
-  const [touchStartX, setTouchStartX] = useState<Record<number, number>>({});
   const [exercises, setExercises] = useState<Exercise[]>([
     {
       id: "1",
@@ -57,7 +55,6 @@ export default function WorkoutPage() {
   const currentExercise = exercises[currentExerciseIndex];
   const currentSet = currentExercise.sets[currentSetIndex];
 
-  // Таймер тренировки
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isActive && !isResting) {
@@ -68,7 +65,6 @@ export default function WorkoutPage() {
     return () => clearInterval(interval);
   }, [isActive, isResting]);
 
-  // Таймер отдыха
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isResting && restTime > 0) {
@@ -77,7 +73,6 @@ export default function WorkoutPage() {
           if (t <= 1) {
             setIsResting(false);
             setIsSetActive(false);
-            // Переходим к следующему подходу
             if (currentSetIndex < currentExercise.sets.length - 1) {
               setCurrentSetIndex((i) => i + 1);
             }
@@ -104,7 +99,6 @@ export default function WorkoutPage() {
 
   const handleMainButton = () => {
     if (isResting) {
-      // Пропустить отдых
       setIsResting(false);
       setRestTime(0);
       setIsSetActive(false);
@@ -112,13 +106,11 @@ export default function WorkoutPage() {
         setCurrentSetIndex((i) => i + 1);
       }
     } else if (isSetActive) {
-      // Завершить подход
       setCompletedSets([...completedSets, currentSet.id]);
       setIsSetActive(false);
       setIsResting(true);
       setRestTime(currentSet.restTime);
     } else {
-      // Начать подход
       setIsSetActive(true);
       setIsActive(true);
     }
@@ -142,37 +134,6 @@ export default function WorkoutPage() {
       }
       return newExercises;
     });
-    // Очищаем offset удаленного подхода
-    setSwipeOffsets((prev) => {
-      const newOffsets = { ...prev };
-      delete newOffsets[setId];
-      return newOffsets;
-    });
-  };
-
-  const handleTouchStart = (e: React.TouchEvent, setId: number) => {
-    if (isSetCompleted(setId)) return;
-    setTouchStartX((prev) => ({ ...prev, [setId]: e.touches[0].clientX }));
-  };
-
-  const handleTouchMove = (e: React.TouchEvent, setId: number) => {
-    if (isSetCompleted(setId)) return;
-    const currentX = e.touches[0].clientX;
-    const startX = touchStartX[setId] || currentX;
-    const diff = startX - currentX;
-    if (diff > 0) {
-      setSwipeOffsets((prev) => ({ ...prev, [setId]: Math.min(diff, 120) }));
-    }
-  };
-
-  const handleTouchEnd = (setId: number) => {
-    const offset = swipeOffsets[setId] || 0;
-    if (offset > 60) {
-      deleteSet(setId);
-    } else {
-      // Анимация возврата
-      setSwipeOffsets((prev) => ({ ...prev, [setId]: 0 }));
-    }
   };
 
   const updateSet = (setId: number, field: "weight" | "reps" | "restTime", value: number) => {
@@ -248,77 +209,62 @@ export default function WorkoutPage() {
         {currentExercise.sets.map((set, index) => {
           const isCurrent = index === currentSetIndex;
           const isCompleted = isSetCompleted(set.id);
-          const offset = swipeOffsets[set.id] || 0;
-          const isSwiping = offset > 0;
           
           return (
-            <div key={set.id} className="relative">
-              {/* Background delete layer */}
-              <div 
-                className="absolute inset-0 rounded-lg flex items-center justify-end pr-6"
-                style={{ 
-                  backgroundColor: offset > 60 ? "#dc2626" : "#7f1d1d",
-                  opacity: isSwiping ? 1 : 0,
-                  transition: "opacity 0.1s"
-                }}
-              >
-                <div className="flex items-center gap-2 text-white">
-                  <span className="text-xs">Удалить</span>
-                  <Trash2 className="w-5 h-5" />
-                </div>
-              </div>
-              
-              <Card
-                className={`border-0 ${
-                  isCurrent 
-                    ? "bg-zinc-700/50" 
-                    : isCompleted 
-                      ? "bg-zinc-800/50 opacity-60" 
-                      : "bg-zinc-800"
-                }`}
-                style={{
-                  transform: `translateX(-${offset}px)`,
-                  transition: "transform 0.2s ease-out"
-                }}
-                onTouchStart={(e) => handleTouchStart(e, set.id)}
-                onTouchMove={(e) => handleTouchMove(e, set.id)}
-                onTouchEnd={() => handleTouchEnd(set.id)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
-                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium ${
-                      isCurrent ? "bg-orange-500 text-white" : "bg-zinc-700 text-zinc-400"
-                    }`}>
-                      {index + 1}
-                    </span>
+            <Card
+              key={set.id}
+              className={`border-0 ${
+                isCurrent 
+                  ? "bg-zinc-700/50" 
+                  : isCompleted 
+                    ? "bg-zinc-800/50 opacity-60" 
+                    : "bg-zinc-800"
+              }`}
+            >
+              <CardContent className="p-3">
+                <div className="flex items-center gap-3">
+                  <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium ${
+                    isCurrent ? "bg-orange-500 text-white" : "bg-zinc-700 text-zinc-400"
+                  }`}>
+                    {index + 1}
+                  </span>
 
-                    <div className="flex-1 flex items-center justify-center gap-2">
-                      <div className="text-center">
-                        <input
-                          type="number"
-                          value={set.weight}
-                          onChange={(e) => updateSet(set.id, "weight", parseInt(e.target.value) || 0)}
-                          disabled={isCompleted}
-                          className={`w-16 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent focus:border-orange-500 focus:outline-none ${
-                            isCurrent ? "text-orange-500" : "text-white"
-                          } ${isCompleted ? "opacity-50" : "hover:border-zinc-600"}`}
-                        />
-                      </div>
-                      <span className="text-zinc-500 text-lg">кг ×</span>
-                      <div className="text-center">
-                        <input
-                          type="number"
-                          value={set.reps}
-                          onChange={(e) => updateSet(set.id, "reps", parseInt(e.target.value) || 0)}
-                          disabled={isCompleted}
-                          className={`w-14 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent focus:border-orange-500 focus:outline-none ${
-                            isCurrent ? "text-orange-500" : "text-white"
-                          } ${isCompleted ? "opacity-50" : "hover:border-zinc-600"}`}
-                        />
-                      </div>
+                  <div className="flex-1 flex items-center justify-center gap-2">
+                    <div className="text-center">
+                      <input
+                        type="number"
+                        value={set.weight}
+                        onChange={(e) => updateSet(set.id, "weight", parseInt(e.target.value) || 0)}
+                        disabled={isCompleted}
+                        className={`w-16 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent focus:border-orange-500 focus:outline-none ${
+                          isCurrent ? "text-orange-500" : "text-white"
+                        } ${isCompleted ? "opacity-50" : "hover:border-zinc-600"}`}
+                      />
                     </div>
+                    <span className="text-zinc-500 text-lg">кг ×</span>
+                    <div className="text-center">
+                      <input
+                        type="number"
+                        value={set.reps}
+                        onChange={(e) => updateSet(set.id, "reps", parseInt(e.target.value) || 0)}
+                        disabled={isCompleted}
+                        className={`w-14 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent focus:border-orange-500 focus:outline-none ${
+                          isCurrent ? "text-orange-500" : "text-white"
+                        } ${isCompleted ? "opacity-50" : "hover:border-zinc-600"}`}
+                      />
+                    </div>
+                  </div>
 
-                    <div className="w-16">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => !isCompleted && setEditingTimer(set.id)}
+                      disabled={isCompleted}
+                      className={`text-center text-xs rounded px-2 py-2 min-w-[50px] transition-colors ${
+                        isCompleted 
+                          ? "text-zinc-600 bg-zinc-800" 
+                          : "text-zinc-400 hover:text-orange-500 bg-zinc-700/50"
+                      }`}
+                    >
                       {editingTimer === set.id ? (
                         <input
                           type="number"
@@ -329,27 +275,27 @@ export default function WorkoutPage() {
                           }}
                           onBlur={() => setEditingTimer(null)}
                           autoFocus
-                          className="w-full text-center text-sm bg-zinc-700 rounded px-2 py-1 text-white"
-                          placeholder="мин"
+                          className="w-10 text-center bg-transparent"
+                          onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
-                        <button
-                          onClick={() => !isCompleted && setEditingTimer(set.id)}
-                          disabled={isCompleted}
-                          className={`w-full text-center text-sm rounded px-2 py-2 transition-colors ${
-                            isCompleted 
-                              ? "text-zinc-600 bg-zinc-800" 
-                              : "text-zinc-400 hover:text-orange-500 bg-zinc-700/50"
-                          }`}
-                        >
-                          {formatTimeShort(set.restTime)}
-                        </button>
+                        formatTimeShort(set.restTime)
                       )}
-                    </div>
+                    </button>
+
+                    {!isCompleted && (
+                      <button
+                        onClick={() => deleteSet(set.id)}
+                        className="p-2 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                        title="Удалить"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           );
         })}
       </div>
@@ -377,9 +323,7 @@ export default function WorkoutPage() {
             className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-colors ${
               isResting 
                 ? "bg-red-500 hover:bg-red-600 shadow-red-500/30" 
-                : isSetActive 
-                  ? "bg-orange-500 hover:bg-orange-600 shadow-orange-500/30"
-                  : "bg-orange-500 hover:bg-orange-600 shadow-orange-500/30"
+                : "bg-orange-500 hover:bg-orange-600 shadow-orange-500/30"
             }`}
           >
             {isResting ? (
@@ -391,7 +335,8 @@ export default function WorkoutPage() {
             )}
           </button>
 
-          <button className="p-3 text-zinc-500 hover:text-white">
+          <button className="p-3 text-zinc-500 hover:text-white"
+          >
             <Clock className="w-6 h-6" />
           </button>
 
