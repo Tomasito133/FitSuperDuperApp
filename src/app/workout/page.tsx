@@ -314,23 +314,23 @@ export default function WorkoutPage() {
                   </button>
                 </div>
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => deleteSet(set.id)}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
-                    title="Delete"
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg border border-transparent hover:border-red-200 transition-colors"
+                    title="Delete set"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => toggleSetComplete(set.id)}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center ${
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                       set.completed
                         ? "bg-green-500 text-white"
                         : "bg-orange-500 text-white hover:bg-orange-600"
                     }`}
                   >
-                    <Check className="w-4 h-4" />
+                    <Check className="w-5 h-5" />
                   </button>
                 </div>
               </div>
