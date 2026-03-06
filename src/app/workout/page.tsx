@@ -15,6 +15,7 @@ import {
   Minus,
   Timer,
   RotateCcw,
+  Trash2,
 } from "lucide-react";
 
 interface Set {
@@ -149,11 +150,25 @@ export default function WorkoutPage() {
           newExercises[currentExerciseIndex].sets.length - 1
         ];
       newExercises[currentExerciseIndex].sets.push({
-        id: lastSet.id + 1,
+        id: Date.now(),
         weight: lastSet.weight,
         reps: lastSet.reps,
         restTime: lastSet.restTime,
         completed: false,
+      });
+      return newExercises;
+    });
+  };
+
+  const deleteSet = (setId: number) => {
+    setExercises((prev) => {
+      const newExercises = [...prev];
+      newExercises[currentExerciseIndex].sets = newExercises[
+        currentExerciseIndex
+      ].sets.filter((s) => s.id !== setId);
+      // Перенумеровываем id подходов
+      newExercises[currentExerciseIndex].sets.forEach((set, idx) => {
+        set.id = idx + 1;
       });
       return newExercises;
     });
@@ -251,7 +266,7 @@ export default function WorkoutPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-4">
                 <span
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
                     set.completed
                       ? "bg-green-500 text-white"
                       : "bg-orange-100 text-orange-600"
@@ -260,60 +275,69 @@ export default function WorkoutPage() {
                   {set.completed ? "✓" : index + 1}
                 </span>
 
-                <div className="flex-1 flex items-center gap-4">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-1 justify-center">
+                  <div className="flex items-center gap-1">
                     <button
                       onClick={() => updateSet(set.id, "weight", -5)}
-                      className="p-1 hover:bg-gray-100 rounded"
+                      className="p-2 hover:bg-gray-100 rounded-lg"
                     >
-                      <Minus className="w-4 h-4" />
+                      <Minus className="w-5 h-5" />
                     </button>
-                    <div className="text-center min-w-[60px]">
+                    <div className="text-center w-[70px]">
                       <input
                         type="number"
                         value={set.weight}
                         onChange={(e) => setSetValue(set.id, "weight", parseInt(e.target.value) || 0)}
-                        className="w-16 text-2xl font-bold text-center bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-orange-500 focus:outline-none"
+                        className="w-full text-2xl font-bold text-center bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-orange-500 focus:outline-none"
                       />
-                      <span className="text-xs text-gray-500 block">kg</span>
+                      <span className="text-xs text-gray-500">kg</span>
                     </div>
                     <button
                       onClick={() => updateSet(set.id, "weight", 5)}
-                      className="p-1 hover:bg-gray-100 rounded"
+                      className="p-2 hover:bg-gray-100 rounded-lg"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-5 h-5" />
                     </button>
                   </div>
 
-                  <span className="text-gray-400">×</span>
+                  <span className="text-gray-400 mx-2">×</span>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <button
                       onClick={() => updateSet(set.id, "reps", -1)}
-                      className="p-1 hover:bg-gray-100 rounded"
+                      className="p-2 hover:bg-gray-100 rounded-lg"
                     >
-                      <Minus className="w-4 h-4" />
+                      <Minus className="w-5 h-5" />
                     </button>
-                    <div className="text-center min-w-[50px]">
+                    <div className="text-center w-[60px]">
                       <input
                         type="number"
                         value={set.reps}
                         onChange={(e) => setSetValue(set.id, "reps", parseInt(e.target.value) || 0)}
-                        className="w-14 text-2xl font-bold text-center bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-orange-500 focus:outline-none"
+                        className="w-full text-2xl font-bold text-center bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-orange-500 focus:outline-none"
                       />
-                      <span className="text-xs text-gray-500 block">reps</span>
+                      <span className="text-xs text-gray-500">reps</span>
                     </div>
                     <button
                       onClick={() => updateSet(set.id, "reps", 1)}
-                      className="p-1 hover:bg-gray-100 rounded"
+                      className="p-2 hover:bg-gray-100 rounded-lg"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
 
-                <button
-                  onClick={() => toggleSetComplete(set.id)}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => deleteSet(set.id)}
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Delete set"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+
+                  <button
+                    onClick={() => toggleSetComplete(set.id)}
                   className={`w-10 h-10 rounded-full flex items-center justify-center ${
                     set.completed
                       ? "bg-green-500 text-white"
