@@ -128,6 +128,19 @@ export default function WorkoutPage() {
     });
   };
 
+  const setSetValue = (setId: number, field: "weight" | "reps", value: number) => {
+    setExercises((prev) => {
+      const newExercises = [...prev];
+      const set = newExercises[currentExerciseIndex].sets.find(
+        (s) => s.id === setId
+      );
+      if (set) {
+        set[field] = Math.max(0, value);
+      }
+      return newExercises;
+    });
+  };
+
   const addSet = () => {
     setExercises((prev) => {
       const newExercises = [...prev];
@@ -256,7 +269,12 @@ export default function WorkoutPage() {
                       <Minus className="w-4 h-4" />
                     </button>
                     <div className="text-center min-w-[60px]">
-                      <span className="text-2xl font-bold">{set.weight}</span>
+                      <input
+                        type="number"
+                        value={set.weight}
+                        onChange={(e) => setSetValue(set.id, "weight", parseInt(e.target.value) || 0)}
+                        className="w-16 text-2xl font-bold text-center bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-orange-500 focus:outline-none"
+                      />
                       <span className="text-xs text-gray-500 block">kg</span>
                     </div>
                     <button
@@ -277,7 +295,12 @@ export default function WorkoutPage() {
                       <Minus className="w-4 h-4" />
                     </button>
                     <div className="text-center min-w-[50px]">
-                      <span className="text-2xl font-bold">{set.reps}</span>
+                      <input
+                        type="number"
+                        value={set.reps}
+                        onChange={(e) => setSetValue(set.id, "reps", parseInt(e.target.value) || 0)}
+                        className="w-14 text-2xl font-bold text-center bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-orange-500 focus:outline-none"
+                      />
                       <span className="text-xs text-gray-500 block">reps</span>
                     </div>
                     <button
