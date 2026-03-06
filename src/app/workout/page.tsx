@@ -6,13 +6,11 @@ import { Button } from "@/components/ui/button";
 import {
   Play,
   Pause,
-  Check,
   ChevronRight,
   ChevronLeft,
   MoreHorizontal,
-  BookOpen,
   Plus,
-  RotateCcw,
+  Clock,
 } from "lucide-react";
 
 interface Set {
@@ -20,7 +18,6 @@ interface Set {
   weight: number;
   reps: number;
   restTime: number;
-  completed: boolean;
 }
 
 interface Exercise {
@@ -33,60 +30,32 @@ interface Exercise {
 export default function WorkoutPage() {
   const [isActive, setIsActive] = useState(false);
   const [workoutTime, setWorkoutTime] = useState(0);
-  const [restTime, setRestTime] = useState(0);
-  const [isResting, setIsResting] = useState(false);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [editingTimer, setEditingTimer] = useState<number | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([
     {
       id: "1",
-      name: "Bench Press",
-      muscleGroup: "CHEST",
+      name: "Тяга верхнего блока узким хватом",
+      muscleGroup: "ШИРОЧАЙШИЕ",
       sets: [
-        { id: 1, weight: 70, reps: 10, restTime: 60, completed: true },
-        { id: 2, weight: 80, reps: 10, restTime: 60, completed: true },
-        { id: 3, weight: 90, reps: 10, restTime: 90, completed: false },
-      ],
-    },
-    {
-      id: "2",
-      name: "Incline Dumbbell Press",
-      muscleGroup: "CHEST",
-      sets: [
-        { id: 1, weight: 30, reps: 12, restTime: 60, completed: false },
-        { id: 2, weight: 30, reps: 12, restTime: 60, completed: false },
+        { id: 1, weight: 52, reps: 12, restTime: 120 },
+        { id: 2, weight: 52, reps: 10, restTime: 120 },
+        { id: 3, weight: 52, reps: 10, restTime: 120 },
       ],
     },
   ]);
 
   const currentExercise = exercises[currentExerciseIndex];
-  const completedSets = currentExercise.sets.filter((s) => s.completed).length;
-  const totalSets = currentExercise.sets.length;
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isActive && !isResting) {
+    if (isActive) {
       interval = setInterval(() => {
         setWorkoutTime((t) => t + 1);
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isActive, isResting]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isResting && restTime > 0) {
-      interval = setInterval(() => {
-        setRestTime((t) => {
-          if (t <= 1) {
-            setIsResting(false);
-            return 0;
-          }
-          return t - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isResting, restTime]);
+  }, [isActive]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -94,37 +63,13 @@ export default function WorkoutPage() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const toggleSetComplete = (setId: number) => {
-    setExercises((prev) => {
-      const newExercises = [...prev];
-      const set = newExercises[currentExerciseIndex].sets.find(
-        (s) => s.id === setId
-      );
-      if (set) {
-        set.completed = !set.completed;
-        if (set.completed && set.restTime > 0) {
-          setIsResting(true);
-          setRestTime(set.restTime);
-        }
-      }
-      return newExercises;
-    });
+  const formatTimeShort = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const updateSet = (setId: number, field: "weight" | "reps", delta: number) => {
-    setExercises((prev) => {
-      const newExercises = [...prev];
-      const set = newExercises[currentExerciseIndex].sets.find(
-        (s) => s.id === setId
-      );
-      if (set) {
-        set[field] = Math.max(0, set[field] + delta);
-      }
-      return newExercises;
-    });
-  };
-
-  const setSetValue = (setId: number, field: "weight" | "reps", value: number) => {
+  const updateSet = (setId: number, field: "weight" | "reps" | "restTime", value: number) => {
     setExercises((prev) => {
       const newExercises = [...prev];
       const set = newExercises[currentExerciseIndex].sets.find(
@@ -147,188 +92,144 @@ export default function WorkoutPage() {
         id: Date.now(),
         weight: lastSet?.weight ?? 0,
         reps: lastSet?.reps ?? 0,
-        restTime: lastSet?.restTime ?? 60,
-        completed: false,
+        restTime: lastSet?.restTime ?? 120,
       });
       return newExercises;
     });
   };
 
-  const skipRest = () => {
-    setIsResting(false);
-    setRestTime(0);
-  };
-
   return (
-    <div className="max-w-md mx-auto bg-white min-h-screen shadow-xl flex flex-col">
-      <div
-        className={`${
-          isResting ? "bg-red-500" : "bg-orange-500"
-        } text-white px-6 py-3 transition-colors`}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold">
-              {isResting ? formatTime(restTime) : formatTime(workoutTime)}
-            </span>
-            {isResting && (
-              <span className="text-sm bg-white/20 px-2 py-0.5 rounded-full">
-                REST
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm">
-              {currentExerciseIndex + 1}/{exercises.length}
-            </span>
-            <button
-              onClick={() => setIsActive(!isActive)}
-              className="p-2 bg-white/20 rounded-full hover:bg-white/30"
-            >
-              {isActive ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
-        {isResting && (
-          <div className="mt-2 flex items-center justify-between">
-            <span className="text-sm">Rest time remaining</span>
-            <button
-              onClick={skipRest}
-              className="text-sm underline hover:no-underline"
-            >
-              Skip
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="px-6 py-4 border-b border-gray-100">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button className="p-1 hover:bg-gray-100 rounded">
-              <ChevronLeft className="w-5 h-5 text-gray-400" />
-            </button>
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">{currentExercise.name}</h2>
-              <p className="text-sm text-gray-500">{currentExercise.muscleGroup}</p>
-            </div>
-          </div>
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <MoreHorizontal className="w-5 h-5 text-gray-400" />
+    <div className="max-w-md mx-auto bg-zinc-900 min-h-screen shadow-xl flex flex-col text-white">
+      {/* Header */}
+      <header className="bg-red-700 px-6 py-4 text-center">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm opacity-80">{currentExerciseIndex + 1} / {exercises.length}</span>
+          <button
+            onClick={() => setIsActive(!isActive)}
+            className="p-2 rounded-full hover:bg-white/10"
+          >
+            {isActive ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
           </button>
         </div>
-        <div className="mt-2 text-center">
-          <span className="text-sm text-gray-500">
-            {completedSets}/{totalSets} sets completed
-          </span>
+        <div className="text-4xl font-bold">{formatTime(workoutTime)}</div>
+        <div className="text-sm uppercase tracking-wider mt-1 opacity-80">
+          {isActive ? "Тренировка" : "Пауза"}
         </div>
+      </header>
+
+      {/* Exercise Info */}
+      <div className="px-6 py-4 border-b border-zinc-800">
+        <div className="flex items-center justify-between mb-4">
+          <button className="p-2 hover:bg-zinc-800 rounded-full">
+            <ChevronLeft className="w-5 h-5 text-zinc-500" />
+          </button>
+          <button className="p-2 hover:bg-zinc-800 rounded-full">
+            <MoreHorizontal className="w-5 h-5 text-zinc-500" />
+          </button>
+        </div>
+        <h2 className="text-xl font-bold text-orange-500 text-center">{currentExercise.name}</h2>
+        <p className="text-sm text-zinc-400 text-center mt-1 uppercase">{currentExercise.muscleGroup}</p>
       </div>
 
-      <div className="flex-1 px-6 py-4 space-y-3 overflow-auto">
+      {/* Sets List */}
+      <div className="flex-1 px-6 py-4 space-y-2">
         {currentExercise.sets.map((set, index) => (
           <Card
             key={set.id}
-            className={`${
-              set.completed
-                ? "bg-gray-50 border-gray-200"
-                : "border-orange-200 bg-white"
-            }`}
+            className="bg-zinc-800 border-zinc-700 hover:border-zinc-600"
           >
-            <CardContent className="p-3">
-              <div className="flex items-center gap-2">
-                <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shrink-0 bg-orange-100 text-orange-600">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                <span className="w-8 h-8 rounded-lg bg-zinc-700 flex items-center justify-center text-sm font-medium text-zinc-300">
                   {index + 1}
                 </span>
 
-                <div className="flex items-center gap-0.5 flex-1 justify-center">
-                  <div className="text-center w-[60px]">
+                <div className="flex-1 flex items-center justify-center gap-2">
+                  <div className="text-center">
                     <input
                       type="number"
                       value={set.weight}
-                      onChange={(e) =>
-                        setSetValue(set.id, "weight", parseInt(e.target.value) || 0)
-                      }
-                      className="w-full text-xl font-bold text-center bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-orange-500 focus:outline-none"
+                      onChange={(e) => updateSet(set.id, "weight", parseInt(e.target.value) || 0)}
+                      className="w-16 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent hover:border-zinc-600 focus:border-orange-500 focus:outline-none text-white"
                     />
-                    <span className="text-xs text-gray-500">kg</span>
                   </div>
-
-                  <span className="text-gray-400 mx-1">×</span>
-
-                  <div className="text-center w-[50px]">
+                  <span className="text-zinc-500 text-lg">кг ×</span>
+                  <div className="text-center">
                     <input
                       type="number"
                       value={set.reps}
-                      onChange={(e) =>
-                        setSetValue(set.id, "reps", parseInt(e.target.value) || 0)
-                      }
-                      className="w-full text-xl font-bold text-center bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-orange-500 focus:outline-none"
+                      onChange={(e) => updateSet(set.id, "reps", parseInt(e.target.value) || 0)}
+                      className="w-14 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent hover:border-zinc-600 focus:border-orange-500 focus:outline-none text-white"
                     />
-                    <span className="text-xs text-gray-500">reps</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={() => toggleSetComplete(set.id)}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                      set.completed
-                        ? "bg-green-500 text-white"
-                        : "bg-orange-500 text-white hover:bg-orange-600"
-                    }`}
-                  >
-                    <Check className="w-4 h-4" />
-                  </button>
+                <div className="w-16">
+                  {editingTimer === set.id ? (
+                    <input
+                      type="number"
+                      value={Math.floor(set.restTime / 60)}
+                      onChange={(e) => {
+                        const mins = parseInt(e.target.value) || 0;
+                        updateSet(set.id, "restTime", mins * 60);
+                      }}
+                      onBlur={() => setEditingTimer(null)}
+                      autoFocus
+                      className="w-full text-center text-sm bg-zinc-700 rounded px-2 py-1 text-white"
+                      placeholder="мин"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => setEditingTimer(set.id)}
+                      className="w-full text-center text-sm text-zinc-400 hover:text-orange-500 bg-zinc-700/50 rounded px-2 py-2 transition-colors"
+                    >
+                      {formatTimeShort(set.restTime)}
+                    </button>
+                  )}
                 </div>
               </div>
             </CardContent>
           </Card>
         ))}
-
-        <Button
-          onClick={addSet}
-          variant="outline"
-          className="w-full py-5 border-dashed border-2"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Add Set
-        </Button>
       </div>
 
-      <div className="border-t border-gray-200 px-6 py-4 bg-white">
+      {/* Bottom Navigation */}
+      <div className="border-t border-zinc-800 px-6 py-4 bg-zinc-900">
         <div className="flex items-center justify-between">
-          <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-gray-600">
-            <BookOpen className="w-6 h-6" />
-            <span className="text-xs">Guide</span>
+          <button
+            onClick={() => setCurrentExerciseIndex(Math.max(0, currentExerciseIndex - 1))}
+            disabled={currentExerciseIndex === 0}
+            className="p-3 text-zinc-500 hover:text-white disabled:opacity-30"
+          >
+            <ChevronLeft className="w-6 h-6" />
           </button>
 
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() =>
-                setCurrentExerciseIndex(Math.max(0, currentExerciseIndex - 1))
-              }
-              disabled={currentExerciseIndex === 0}
-              className="p-3 bg-gray-100 rounded-full disabled:opacity-30 hover:bg-gray-200"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
+          <button
+            onClick={addSet}
+            className="p-3 text-zinc-500 hover:text-white"
+          >
+            <Plus className="w-6 h-6" />
+          </button>
 
-            <button
-              onClick={() =>
-                setCurrentExerciseIndex(
-                  Math.min(exercises.length - 1, currentExerciseIndex + 1)
-                )
-              }
-              disabled={currentExerciseIndex === exercises.length - 1}
-              className="p-3 bg-orange-500 text-white rounded-full disabled:opacity-30 hover:bg-orange-600"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
-          </div>
+          <button
+            onClick={() => setIsActive(!isActive)}
+            className="w-16 h-16 rounded-full bg-orange-500 hover:bg-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30"
+          >
+            {isActive ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8 ml-1" />}
+          </button>
 
-          <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-gray-600">
-            <RotateCcw className="w-6 h-6" />
-            <span className="text-xs">History</span>
+          <button className="p-3 text-zinc-500 hover:text-white">
+            <Clock className="w-6 h-6" />
+          </button>
+
+          <button
+            onClick={() =>
+              setCurrentExerciseIndex(Math.min(exercises.length - 1, currentExerciseIndex + 1))
+            }
+            disabled={currentExerciseIndex === exercises.length - 1}
+            className="p-3 text-zinc-500 hover:text-white disabled:opacity-30"
+          >
+            <ChevronRight className="w-6 h-6" />
           </button>
         </div>
       </div>
