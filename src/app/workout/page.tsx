@@ -12,6 +12,7 @@ import {
   MoreHorizontal,
   Plus,
   Clock,
+  Trash2,
 } from "lucide-react";
 
 interface Set {
@@ -38,6 +39,9 @@ export default function WorkoutPage() {
   const [completedSets, setCompletedSets] = useState<number[]>([]);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [editingTimer, setEditingTimer] = useState<number | null>(null);
+  const [swipingSet, setSwipingSet] = useState<number | null>(null);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [touchStartX, setTouchStartX] = useState(0);
   const [exercises, setExercises] = useState<Exercise[]>([
     {
       id: "1",
@@ -123,6 +127,52 @@ export default function WorkoutPage() {
 
   const isSetCompleted = (setId: number) => completedSets.includes(setId);
 
+  const deleteSet = (setId: number) => {
+    setExercises((prev) => {
+      const newExercises = [...prev];
+      const sets = newExercises[currentExerciseIndex].sets;
+      const index = sets.findIndex((s) => s.id === setId);
+      if (index > -1) {
+        sets.splice(index, 1);
+        if (index < currentSetIndex) {
+          setCurrentSetIndex((i) => Math.max(0, i - 1));
+        }
+        if (currentSetIndex >= sets.length) {
+          setCurrentSetIndex(Math.max(0, sets.length - 1));
+        }
+      }
+      return newExercises;
+    });
+    setSwipingSet(null);
+    setSwipeOffset(0);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent, setId: number) => {
+    if (isSetCompleted(setId)) return;
+    setSwipingSet(setId);
+    setTouchStartX(e.touches[0].clientX);
+    setSwipeOffset(0);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (swipingSet === null) return;
+    const currentX = e.touches[0].clientX;
+    const diff = touchStartX - currentX;
+    if (diff > 0 && diff < 120) {
+      setSwipeOffset(diff);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (swipingSet === null) return;
+    if (swipeOffset > 80) {
+      deleteSet(swipingSet);
+    } else {
+      setSwipeOffset(0);
+      setSwipingSet(null);
+    }
+  };
+
   const updateSet = (setId: number, field: "weight" | "reps" | "restTime", value: number) => {
     setExercises((prev) => {
       const newExercises = [...prev];
@@ -196,83 +246,102 @@ export default function WorkoutPage() {
         {currentExercise.sets.map((set, index) => {
           const isCurrent = index === currentSetIndex;
           const isCompleted = isSetCompleted(set.id);
+          const isSwiping = swipingSet === set.id;
           
           return (
-            <Card
-              key={set.id}
-              className={`border-0 ${
-                isCurrent 
-                  ? "bg-zinc-700/50" 
-                  : isCompleted 
-                    ? "bg-zinc-800/50 opacity-60" 
-                    : "bg-zinc-800"
-              }`}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                  <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium ${
-                    isCurrent ? "bg-orange-500 text-white" : "bg-zinc-700 text-zinc-400"
-                  }`}>
-                    {index + 1}
-                  </span>
+            <div key={set.id} className="relative">
+              {/* Background delete layer */}
+              <div 
+                className={`absolute inset-0 rounded-lg flex items-center justify-end pr-6 transition-opacity ${
+                  isSwiping && swipeOffset > 20 ? "opacity-100" : "opacity-0"
+                }`}
+                style={{ backgroundColor: swipeOffset > 80 ? "#ef4444" : "#7f1d1d" }}
+              >
+                <Trash2 className="w-6 h-6 text-white" />
+              </div>
+              
+              <Card
+                className={`border-0 transition-transform ${
+                  isCurrent 
+                    ? "bg-zinc-700/50" 
+                    : isCompleted 
+                      ? "bg-zinc-800/50 opacity-60" 
+                      : "bg-zinc-800"
+                }`}
+                style={{
+                  transform: isSwiping ? `translateX(-${swipeOffset}px)` : "translateX(0)",
+                  transition: isSwiping ? "none" : "transform 0.2s ease-out"
+                }}
+                onTouchStart={(e) => handleTouchStart(e, set.id)}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-4">
+                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium ${
+                      isCurrent ? "bg-orange-500 text-white" : "bg-zinc-700 text-zinc-400"
+                    }`}>
+                      {index + 1}
+                    </span>
 
-                  <div className="flex-1 flex items-center justify-center gap-2">
-                    <div className="text-center">
-                      <input
-                        type="number"
-                        value={set.weight}
-                        onChange={(e) => updateSet(set.id, "weight", parseInt(e.target.value) || 0)}
-                        disabled={isCompleted}
-                        className={`w-16 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent focus:border-orange-500 focus:outline-none ${
-                          isCurrent ? "text-orange-500" : "text-white"
-                        } ${isCompleted ? "opacity-50" : "hover:border-zinc-600"}`}
-                      />
+                    <div className="flex-1 flex items-center justify-center gap-2">
+                      <div className="text-center">
+                        <input
+                          type="number"
+                          value={set.weight}
+                          onChange={(e) => updateSet(set.id, "weight", parseInt(e.target.value) || 0)}
+                          disabled={isCompleted}
+                          className={`w-16 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent focus:border-orange-500 focus:outline-none ${
+                            isCurrent ? "text-orange-500" : "text-white"
+                          } ${isCompleted ? "opacity-50" : "hover:border-zinc-600"}`}
+                        />
+                      </div>
+                      <span className="text-zinc-500 text-lg">кг ×</span>
+                      <div className="text-center">
+                        <input
+                          type="number"
+                          value={set.reps}
+                          onChange={(e) => updateSet(set.id, "reps", parseInt(e.target.value) || 0)}
+                          disabled={isCompleted}
+                          className={`w-14 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent focus:border-orange-500 focus:outline-none ${
+                            isCurrent ? "text-orange-500" : "text-white"
+                          } ${isCompleted ? "opacity-50" : "hover:border-zinc-600"}`}
+                        />
+                      </div>
                     </div>
-                    <span className="text-zinc-500 text-lg">кг ×</span>
-                    <div className="text-center">
-                      <input
-                        type="number"
-                        value={set.reps}
-                        onChange={(e) => updateSet(set.id, "reps", parseInt(e.target.value) || 0)}
-                        disabled={isCompleted}
-                        className={`w-14 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent focus:border-orange-500 focus:outline-none ${
-                          isCurrent ? "text-orange-500" : "text-white"
-                        } ${isCompleted ? "opacity-50" : "hover:border-zinc-600"}`}
-                      />
+
+                    <div className="w-16">
+                      {editingTimer === set.id ? (
+                        <input
+                          type="number"
+                          value={Math.floor(set.restTime / 60)}
+                          onChange={(e) => {
+                            const mins = parseInt(e.target.value) || 0;
+                            updateSet(set.id, "restTime", mins * 60);
+                          }}
+                          onBlur={() => setEditingTimer(null)}
+                          autoFocus
+                          className="w-full text-center text-sm bg-zinc-700 rounded px-2 py-1 text-white"
+                          placeholder="мин"
+                        />
+                      ) : (
+                        <button
+                          onClick={() => !isCompleted && setEditingTimer(set.id)}
+                          disabled={isCompleted}
+                          className={`w-full text-center text-sm rounded px-2 py-2 transition-colors ${
+                            isCompleted 
+                              ? "text-zinc-600 bg-zinc-800" 
+                              : "text-zinc-400 hover:text-orange-500 bg-zinc-700/50"
+                          }`}
+                        >
+                          {formatTimeShort(set.restTime)}
+                        </button>
+                      )}
                     </div>
                   </div>
-
-                  <div className="w-16">
-                    {editingTimer === set.id ? (
-                      <input
-                        type="number"
-                        value={Math.floor(set.restTime / 60)}
-                        onChange={(e) => {
-                          const mins = parseInt(e.target.value) || 0;
-                          updateSet(set.id, "restTime", mins * 60);
-                        }}
-                        onBlur={() => setEditingTimer(null)}
-                        autoFocus
-                        className="w-full text-center text-sm bg-zinc-700 rounded px-2 py-1 text-white"
-                        placeholder="мин"
-                      />
-                    ) : (
-                      <button
-                        onClick={() => !isCompleted && setEditingTimer(set.id)}
-                        disabled={isCompleted}
-                        className={`w-full text-center text-sm rounded px-2 py-2 transition-colors ${
-                          isCompleted 
-                            ? "text-zinc-600 bg-zinc-800" 
-                            : "text-zinc-400 hover:text-orange-500 bg-zinc-700/50"
-                        }`}
-                      >
-                        {formatTimeShort(set.restTime)}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           );
         })}
       </div>
