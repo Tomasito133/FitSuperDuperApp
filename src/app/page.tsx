@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -163,12 +164,18 @@ export default function JournalPage() {
                   <p className="text-sm text-gray-500 mb-1">{upcomingWorkout.time}</p>
                   <h3 className="text-lg font-bold text-gray-900">{upcomingWorkout.name}</h3>
                 </div>
-                <Button
-                  size="icon"
-                  className="bg-orange-500 hover:bg-orange-600 h-12 w-12 rounded-full"
-                >
-                  <Play className="w-5 h-5 ml-0.5" />
-                </Button>
+                import Link from "next/link";
+// ... остальные импорты
+
+// ... внутри компонента, в секции Next Workout:
+<Link href="/workout">
+  <Button
+    size="icon"
+    className="bg-orange-500 hover:bg-orange-600 h-12 w-12 rounded-full"
+  >
+    <Play className="w-5 h-5 ml-0.5" />
+  </Button>
+</Link>
               </div>
             </CardContent>
           </Card>
