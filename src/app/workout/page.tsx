@@ -13,7 +13,6 @@ import {
   BookOpen,
   Plus,
   RotateCcw,
-  Trash2,
 } from "lucide-react";
 
 interface Set {
@@ -155,19 +154,6 @@ export default function WorkoutPage() {
     });
   };
 
-  const deleteSet = (setId: number) => {
-    setExercises((prev) => {
-      const newExercises = [...prev];
-      newExercises[currentExerciseIndex].sets = newExercises[
-        currentExerciseIndex
-      ].sets.filter((s) => s.id !== setId);
-      newExercises[currentExerciseIndex].sets.forEach((set, idx) => {
-        set.id = idx + 1;
-      });
-      return newExercises;
-    });
-  };
-
   const skipRest = () => {
     setIsResting(false);
     setRestTime(0);
@@ -283,13 +269,6 @@ export default function WorkoutPage() {
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={() => deleteSet(set.id)}
-                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
                   <button
                     onClick={() => toggleSetComplete(set.id)}
                     className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
