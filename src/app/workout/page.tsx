@@ -251,14 +251,8 @@ export default function WorkoutPage() {
           >
             <CardContent className="p-3">
               <div className="flex items-center gap-2">
-                <span
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-                    set.completed
-                      ? "bg-green-500 text-white"
-                      : "bg-orange-100 text-orange-600"
-                  }`}
-                >
-                  {set.completed ? "✓" : index + 1}
+                <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shrink-0 bg-orange-100 text-orange-600">
+                  {index + 1}
                 </span>
 
                 <div className="flex items-center gap-0.5 flex-1 justify-center">
