@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Play,
   Pause,
+  Check,
   ChevronRight,
   ChevronLeft,
   MoreHorizontal,
@@ -30,6 +31,11 @@ interface Exercise {
 export default function WorkoutPage() {
   const [isActive, setIsActive] = useState(false);
   const [workoutTime, setWorkoutTime] = useState(0);
+  const [restTime, setRestTime] = useState(0);
+  const [isResting, setIsResting] = useState(false);
+  const [currentSetIndex, setCurrentSetIndex] = useState(0);
+  const [isSetActive, setIsSetActive] = useState(false);
+  const [completedSets, setCompletedSets] = useState<number[]>([]);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [editingTimer, setEditingTimer] = useState<number | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([
@@ -46,16 +52,40 @@ export default function WorkoutPage() {
   ]);
 
   const currentExercise = exercises[currentExerciseIndex];
+  const currentSet = currentExercise.sets[currentSetIndex];
 
+  // Таймер тренировки
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isActive) {
+    if (isActive && !isResting) {
       interval = setInterval(() => {
         setWorkoutTime((t) => t + 1);
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isActive]);
+  }, [isActive, isResting]);
+
+  // Таймер отдыха
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isResting && restTime > 0) {
+      interval = setInterval(() => {
+        setRestTime((t) => {
+          if (t <= 1) {
+            setIsResting(false);
+            setIsSetActive(false);
+            // Переходим к следующему подходу
+            if (currentSetIndex < currentExercise.sets.length - 1) {
+              setCurrentSetIndex((i) => i + 1);
+            }
+            return 0;
+          }
+          return t - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isResting, restTime, currentSetIndex, currentExercise.sets.length]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -68,6 +98,30 @@ export default function WorkoutPage() {
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
+
+  const handleMainButton = () => {
+    if (isResting) {
+      // Пропустить отдых
+      setIsResting(false);
+      setRestTime(0);
+      setIsSetActive(false);
+      if (currentSetIndex < currentExercise.sets.length - 1) {
+        setCurrentSetIndex((i) => i + 1);
+      }
+    } else if (isSetActive) {
+      // Завершить подход
+      setCompletedSets([...completedSets, currentSet.id]);
+      setIsSetActive(false);
+      setIsResting(true);
+      setRestTime(currentSet.restTime);
+    } else {
+      // Начать подход
+      setIsSetActive(true);
+      setIsActive(true);
+    }
+  };
+
+  const isSetCompleted = (setId: number) => completedSets.includes(setId);
 
   const updateSet = (setId: number, field: "weight" | "reps" | "restTime", value: number) => {
     setExercises((prev) => {
@@ -101,9 +155,13 @@ export default function WorkoutPage() {
   return (
     <div className="max-w-md mx-auto bg-zinc-900 min-h-screen shadow-xl flex flex-col text-white">
       {/* Header */}
-      <header className="bg-red-700 px-6 py-4 text-center">
+      <header className={`px-6 py-4 text-center transition-colors ${
+        isResting ? "bg-red-600" : "bg-red-700"
+      }`}>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm opacity-80">{currentExerciseIndex + 1} / {exercises.length}</span>
+          <span className="text-sm opacity-80">
+            {isResting ? "ОТДЫХ" : `${currentSetIndex + 1} / ${currentExercise.sets.length}`}
+          </span>
           <button
             onClick={() => setIsActive(!isActive)}
             className="p-2 rounded-full hover:bg-white/10"
@@ -111,9 +169,11 @@ export default function WorkoutPage() {
             {isActive ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
           </button>
         </div>
-        <div className="text-4xl font-bold">{formatTime(workoutTime)}</div>
+        <div className="text-4xl font-bold">
+          {isResting ? formatTime(restTime) : formatTime(workoutTime)}
+        </div>
         <div className="text-sm uppercase tracking-wider mt-1 opacity-80">
-          {isActive ? "Тренировка" : "Пауза"}
+          {isResting ? formatTimeShort(currentSet.restTime) + " отдых" : isSetActive ? "В работе" : "Готов"}
         </div>
       </header>
 
@@ -133,64 +193,88 @@ export default function WorkoutPage() {
 
       {/* Sets List */}
       <div className="flex-1 px-6 py-4 space-y-2">
-        {currentExercise.sets.map((set, index) => (
-          <Card
-            key={set.id}
-            className="bg-zinc-800 border-zinc-700 hover:border-zinc-600"
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-4">
-                <span className="w-8 h-8 rounded-lg bg-zinc-700 flex items-center justify-center text-sm font-medium text-zinc-300">
-                  {index + 1}
-                </span>
+        {currentExercise.sets.map((set, index) => {
+          const isCurrent = index === currentSetIndex;
+          const isCompleted = isSetCompleted(set.id);
+          
+          return (
+            <Card
+              key={set.id}
+              className={`border-0 ${
+                isCurrent 
+                  ? "bg-zinc-700/50" 
+                  : isCompleted 
+                    ? "bg-zinc-800/50 opacity-60" 
+                    : "bg-zinc-800"
+              }`}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium ${
+                    isCurrent ? "bg-orange-500 text-white" : "bg-zinc-700 text-zinc-400"
+                  }`}>
+                    {index + 1}
+                  </span>
 
-                <div className="flex-1 flex items-center justify-center gap-2">
-                  <div className="text-center">
-                    <input
-                      type="number"
-                      value={set.weight}
-                      onChange={(e) => updateSet(set.id, "weight", parseInt(e.target.value) || 0)}
-                      className="w-16 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent hover:border-zinc-600 focus:border-orange-500 focus:outline-none text-white"
-                    />
+                  <div className="flex-1 flex items-center justify-center gap-2">
+                    <div className="text-center">
+                      <input
+                        type="number"
+                        value={set.weight}
+                        onChange={(e) => updateSet(set.id, "weight", parseInt(e.target.value) || 0)}
+                        disabled={isCompleted}
+                        className={`w-16 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent focus:border-orange-500 focus:outline-none ${
+                          isCurrent ? "text-orange-500" : "text-white"
+                        } ${isCompleted ? "opacity-50" : "hover:border-zinc-600"}`}
+                      />
+                    </div>
+                    <span className="text-zinc-500 text-lg">кг ×</span>
+                    <div className="text-center">
+                      <input
+                        type="number"
+                        value={set.reps}
+                        onChange={(e) => updateSet(set.id, "reps", parseInt(e.target.value) || 0)}
+                        disabled={isCompleted}
+                        className={`w-14 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent focus:border-orange-500 focus:outline-none ${
+                          isCurrent ? "text-orange-500" : "text-white"
+                        } ${isCompleted ? "opacity-50" : "hover:border-zinc-600"}`}
+                      />
+                    </div>
                   </div>
-                  <span className="text-zinc-500 text-lg">кг ×</span>
-                  <div className="text-center">
-                    <input
-                      type="number"
-                      value={set.reps}
-                      onChange={(e) => updateSet(set.id, "reps", parseInt(e.target.value) || 0)}
-                      className="w-14 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent hover:border-zinc-600 focus:border-orange-500 focus:outline-none text-white"
-                    />
+
+                  <div className="w-16">
+                    {editingTimer === set.id ? (
+                      <input
+                        type="number"
+                        value={Math.floor(set.restTime / 60)}
+                        onChange={(e) => {
+                          const mins = parseInt(e.target.value) || 0;
+                          updateSet(set.id, "restTime", mins * 60);
+                        }}
+                        onBlur={() => setEditingTimer(null)}
+                        autoFocus
+                        className="w-full text-center text-sm bg-zinc-700 rounded px-2 py-1 text-white"
+                        placeholder="мин"
+                      />
+                    ) : (
+                      <button
+                        onClick={() => !isCompleted && setEditingTimer(set.id)}
+                        disabled={isCompleted}
+                        className={`w-full text-center text-sm rounded px-2 py-2 transition-colors ${
+                          isCompleted 
+                            ? "text-zinc-600 bg-zinc-800" 
+                            : "text-zinc-400 hover:text-orange-500 bg-zinc-700/50"
+                        }`}
+                      >
+                        {formatTimeShort(set.restTime)}
+                      </button>
+                    )}
                   </div>
                 </div>
-
-                <div className="w-16">
-                  {editingTimer === set.id ? (
-                    <input
-                      type="number"
-                      value={Math.floor(set.restTime / 60)}
-                      onChange={(e) => {
-                        const mins = parseInt(e.target.value) || 0;
-                        updateSet(set.id, "restTime", mins * 60);
-                      }}
-                      onBlur={() => setEditingTimer(null)}
-                      autoFocus
-                      className="w-full text-center text-sm bg-zinc-700 rounded px-2 py-1 text-white"
-                      placeholder="мин"
-                    />
-                  ) : (
-                    <button
-                      onClick={() => setEditingTimer(set.id)}
-                      className="w-full text-center text-sm text-zinc-400 hover:text-orange-500 bg-zinc-700/50 rounded px-2 py-2 transition-colors"
-                    >
-                      {formatTimeShort(set.restTime)}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Bottom Navigation */}
@@ -212,10 +296,22 @@ export default function WorkoutPage() {
           </button>
 
           <button
-            onClick={() => setIsActive(!isActive)}
-            className="w-16 h-16 rounded-full bg-orange-500 hover:bg-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30"
+            onClick={handleMainButton}
+            className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-colors ${
+              isResting 
+                ? "bg-red-500 hover:bg-red-600 shadow-red-500/30" 
+                : isSetActive 
+                  ? "bg-orange-500 hover:bg-orange-600 shadow-orange-500/30"
+                  : "bg-orange-500 hover:bg-orange-600 shadow-orange-500/30"
+            }`}
           >
-            {isActive ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8 ml-1" />}
+            {isResting ? (
+              <span className="text-sm font-bold">Skip</span>
+            ) : isSetActive ? (
+              <Check className="w-8 h-8" />
+            ) : (
+              <Play className="w-8 h-8 ml-1" />
+            )}
           </button>
 
           <button className="p-3 text-zinc-500 hover:text-white">
