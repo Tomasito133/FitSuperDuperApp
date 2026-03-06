@@ -338,14 +338,14 @@ export default function WorkoutPage() {
 
                   <button
                     onClick={() => toggleSetComplete(set.id)}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    set.completed
-                      ? "bg-green-500 text-white"
-                      : "bg-orange-500 text-white hover:bg-orange-600"
-                  }`}
-                >
-                  <Check className="w-5 h-5" />
-                </button>
+                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      set.completed
+                        ? "bg-green-500 text-white"
+                        : "bg-orange-500 text-white hover:bg-orange-600"
+                    }`}
+                  >
+                    <Check className="w-5 h-5" />
+                  </button>
               </div>
             </CardContent>
           </Card>
