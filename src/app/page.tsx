@@ -347,13 +347,13 @@ export default function JournalPage() {
               key={day.shortName}
               onClick={() => setSelectedDay(day.shortName)}
               className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all ${
-                selectedDay === day.shortName && day.status === "today"
+                day.status === "today"
                   ? "ring-2 ring-orange-500/50 bg-gray-800/50"
                   : ""
               }`}
             >
               <span className={`text-xs font-medium ${
-                selectedDay === day.shortName
+                day.status === "today" || selectedDay === day.shortName
                   ? "text-orange-500"
                   : "text-gray-500"
               }`}>
