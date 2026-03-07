@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, MoreHorizontal, Plus, BookOpen, BarChart3, Dumbbell, Settings } from "lucide-react";
+import { Search, MoreHorizontal, Plus, BookOpen, BarChart3, Dumbbell, Settings, X, ChevronRight } from "lucide-react";
 
 interface Exercise {
   id: string;
@@ -20,8 +20,24 @@ interface Category {
   muscleGroups: MuscleGroup[];
 }
 
+// Доступные мышечные группы для выбора
+const availableMuscleGroups = [
+  "Передние дельты",
+  "Средние дельты", 
+  "Задние дельты",
+  "Грудь",
+  "Спина",
+  "Бицепс",
+  "Трицепс",
+  "Пресс",
+  "Квадрицепс",
+  "Бицепс бедра",
+  "Икры",
+  "Ягодицы",
+];
+
 // Мок-данные упражнений
-const exerciseData: Category[] = [
+const initialExerciseData: Category[] = [
   {
     title: "Силовые",
     muscleGroups: [
@@ -82,6 +98,10 @@ function ExerciseImagePlaceholder() {
 
 export default function ExercisesPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newExerciseName, setNewExerciseName] = useState("");
+  const [selectedMuscleGroup, setSelectedMuscleGroup] = useState("");
+  const [exerciseData, setExerciseData] = useState<Category[]>(initialExerciseData);
 
   // Фильтрация по поиску
   const filteredData = searchQuery
@@ -98,6 +118,44 @@ export default function ExercisesPage() {
       })).filter((cat) => cat.muscleGroups.length > 0)
     : exerciseData;
 
+  const handleAddExercise = () => {
+    if (!newExerciseName.trim() || !selectedMuscleGroup) return;
+
+    const newExercise: Exercise = {
+      id: Date.now().toString(),
+      name: newExerciseName.trim(),
+      hasImage: false,
+    };
+
+    setExerciseData((prev) => {
+      const newData = [...prev];
+      const strengthCategory = newData.find((cat) => cat.title === "Силовые");
+      
+      if (strengthCategory) {
+        const muscleGroup = strengthCategory.muscleGroups.find(
+          (mg) => mg.name === selectedMuscleGroup
+        );
+        
+        if (muscleGroup) {
+          muscleGroup.exercises.push(newExercise);
+        } else {
+          // Создаём новую группу, если её нет
+          strengthCategory.muscleGroups.push({
+            name: selectedMuscleGroup,
+            exercises: [newExercise],
+          });
+        }
+      }
+      
+      return newData;
+    });
+
+    // Сброс формы
+    setNewExerciseName("");
+    setSelectedMuscleGroup("");
+    setIsAddModalOpen(false);
+  };
+
   return (
     <div className="max-w-md mx-auto bg-gray-950 min-h-screen shadow-xl">
       {/* Header */}
@@ -107,7 +165,10 @@ export default function ExercisesPage() {
             <MoreHorizontal className="w-6 h-6" />
           </button>
           <h1 className="text-xl font-semibold text-white">Упражнения</h1>
-          <button className="w-10 h-10 flex items-center justify-center text-orange-500">
+          <button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="w-10 h-10 flex items-center justify-center text-orange-500"
+          >
             <Plus className="w-6 h-6" />
           </button>
         </div>
@@ -194,6 +255,75 @@ export default function ExercisesPage() {
           </Link>
         </div>
       </nav>
+
+      {/* Add Exercise Modal */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-end">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsAddModalOpen(false)}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative w-full max-w-md mx-auto bg-gray-900 rounded-t-3xl p-6 animate-slide-up">
+            {/* Handle bar */}
+            <div className="w-12 h-1 bg-gray-700 rounded-full mx-auto mb-6" />
+            
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-white">Новое упражнение</h2>
+              <button 
+                onClick={() => setIsAddModalOpen(false)}
+                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Exercise Name Input */}
+            <div className="mb-6">
+              <label className="block text-gray-400 text-sm mb-2">Название</label>
+              <input
+                type="text"
+                placeholder="Например: Жим штанги стоя"
+                value={newExerciseName}
+                onChange={(e) => setNewExerciseName(e.target.value)}
+                className="w-full bg-gray-800 text-white placeholder-gray-500 rounded-xl py-4 px-4 text-base focus:outline-none focus:ring-2 focus:ring-orange-500/50"
+              />
+            </div>
+
+            {/* Muscle Group Selection */}
+            <div className="mb-6">
+              <label className="block text-gray-400 text-sm mb-3">Мышечная группа</label>
+              <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+                {availableMuscleGroups.map((group) => (
+                  <button
+                    key={group}
+                    onClick={() => setSelectedMuscleGroup(group)}
+                    className={`py-3 px-4 rounded-xl text-sm font-medium text-left transition-all ${
+                      selectedMuscleGroup === group
+                        ? "bg-orange-500 text-white"
+                        : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                    }`}
+                  >
+                    {group}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Save Button */}
+            <button
+              onClick={handleAddExercise}
+              disabled={!newExerciseName.trim() || !selectedMuscleGroup}
+              className="w-full bg-orange-500 text-white font-semibold py-4 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition-colors"
+            >
+              Добавить
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
