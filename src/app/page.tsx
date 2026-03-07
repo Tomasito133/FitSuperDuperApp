@@ -2,288 +2,264 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  CalendarDays,
-  Trophy,
-  Flame,
-  Clock,
-  ChevronRight,
-  Plus,
-  Dumbbell,
-  BarChart3,
-  BookOpen,
-  Play,
-} from "lucide-react";
+import { Plus, Trophy, Dumbbell, BarChart3, Settings, MoreHorizontal, Zap, Check, ChevronRight } from "lucide-react";
 
 // Типы данных
 interface Workout {
   id: string;
-  date: string;
+  dayName: string;
   name: string;
-  type: "strength" | "cardio" | "stretching";
   duration: string;
-  volume?: string;
-  calories?: number;
-  heartRate?: number;
-  emoji?: string;
-  note?: string;
+  volume: string;
+  calories: number;
+  muscleGroup: string;
 }
 
 interface DayStatus {
-  day: string;
+  shortName: string;
+  fullName: string;
   date: number;
-  status: "completed" | "planned" | "rest";
+  status: "completed" | "today" | "planned" | "rest";
+}
+
+interface WeekSection {
+  title: string;
+  trophyCount: number;
+  workoutsCount: number;
+  workouts: Workout[];
 }
 
 // Мок-данные
 const weekDays: DayStatus[] = [
-  { day: "Mon", date: 3, status: "completed" },
-  { day: "Tue", date: 4, status: "completed" },
-  { day: "Wed", date: 5, status: "rest" },
-  { day: "Thu", date: 6, status: "planned" },
-  { day: "Fri", date: 7, status: "planned" },
-  { day: "Sat", date: 8, status: "rest" },
-  { day: "Sun", date: 9, status: "rest" },
+  { shortName: "Пн", fullName: "Понедельник", date: 2, status: "rest" },
+  { shortName: "Вт", fullName: "Вторник", date: 3, status: "completed" },
+  { shortName: "Ср", fullName: "Среда", date: 4, status: "rest" },
+  { shortName: "Чт", fullName: "Четверг", date: 5, status: "completed" },
+  { shortName: "Пт", fullName: "Пятница", date: 6, status: "planned" },
+  { shortName: "Сб", fullName: "Суббота", date: 7, status: "today" },
+  { shortName: "Вс", fullName: "Воскресенье", date: 8, status: "rest" },
 ];
 
-const workouts: Workout[] = [
+const currentWorkout = {
+  label: "Сейчас",
+  name: "Верх",
+};
+
+const weekSections: WeekSection[] = [
   {
-    id: "1",
-    date: "Wednesday",
-    name: "Chest and Triceps",
-    type: "strength",
-    duration: "45 min",
-    volume: "5 780 kg",
-    heartRate: 118,
-    emoji: "😎",
-    note: "Great workout!",
+    title: "На этой неделе",
+    trophyCount: 9,
+    workoutsCount: 2,
+    workouts: [
+      {
+        id: "1",
+        dayName: "Четверг",
+        name: "Тяни",
+        duration: "1 ч 18 мин",
+        volume: "13 836 кг",
+        calories: 372,
+        muscleGroup: "Тяга",
+      },
+      {
+        id: "2",
+        dayName: "Вторник",
+        name: "Низ",
+        duration: "45 мин",
+        volume: "9 732 кг",
+        calories: 204,
+        muscleGroup: "Ноги",
+      },
+    ],
   },
   {
-    id: "2",
-    date: "Tuesday",
-    name: "Stretches",
-    type: "stretching",
-    duration: "20 min",
-  },
-  {
-    id: "3",
-    date: "Monday",
-    name: "Cardio HIIT",
-    type: "cardio",
-    duration: "30 min",
-    calories: 440,
-    heartRate: 147,
+    title: "23 февраля—1 марта",
+    trophyCount: 10,
+    workoutsCount: 2,
+    workouts: [
+      {
+        id: "3",
+        dayName: "Воскресенье",
+        name: "Грудь и трицепс",
+        duration: "1 ч 5 мин",
+        volume: "11 240 кг",
+        calories: 320,
+        muscleGroup: "Грудь",
+      },
+      {
+        id: "4",
+        dayName: "Пятница",
+        name: "Спина и бицепс",
+        duration: "55 мин",
+        volume: "10 150 кг",
+        calories: 280,
+        muscleGroup: "Спина",
+      },
+    ],
   },
 ];
-
-const upcomingWorkout = {
-  name: "Legs and Abs",
-  time: "Friday, 7:00",
-};
-
-// Цвета для типов тренировок
-const typeColors = {
-  strength: "border-l-orange-500",
-  cardio: "border-l-yellow-500",
-  stretching: "border-l-green-500",
-};
-
-const typeBadges = {
-  strength: "bg-orange-100 text-orange-700",
-  cardio: "bg-yellow-100 text-yellow-700",
-  stretching: "bg-green-100 text-green-700",
-};
 
 export default function JournalPage() {
   const [activeTab, setActiveTab] = useState("journal");
-  const [selectedDay, setSelectedDay] = useState("Thu");
+
+  const getDayCircleStyle = (day: DayStatus) => {
+    switch (day.status) {
+      case "completed":
+        return "bg-orange-500 text-white";
+      case "planned":
+        return "bg-orange-500/20 text-orange-500";
+      case "today":
+        return "bg-gray-800 text-white border border-gray-600";
+      default:
+        return "bg-gray-800 text-gray-500";
+    }
+  };
+
+  const getDayIndicator = (day: DayStatus) => {
+    switch (day.status) {
+      case "completed":
+        return <Check className="w-4 h-4" />;
+      case "planned":
+        return <Zap className="w-4 h-4" />;
+      default:
+        return <span className="text-sm font-medium">{day.date}</span>;
+    }
+  };
 
   return (
-    <div className="max-w-md mx-auto bg-white min-h-screen shadow-xl">
+    <div className="max-w-md mx-auto bg-gray-950 min-h-screen shadow-xl">
       {/* Header */}
-      <header className="px-6 pt-8 pb-4">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Journal</h1>
-          <div className="flex gap-2">
-            <Button variant="ghost" size="icon" className="text-gray-600">
-              <CalendarDays className="w-5 h-5" />
-            </Button>
-            <Button size="icon" className="bg-orange-500 hover:bg-orange-600">
-              <Plus className="w-5 h-5" />
-            </Button>
-          </div>
+      <header className="px-5 pt-6 pb-2">
+        {/* Templates row */}
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-orange-500 font-medium text-base">Шаблоны</span>
+          <button className="w-8 h-8 flex items-center justify-center text-orange-500">
+            <Plus className="w-6 h-6" />
+          </button>
         </div>
 
+        {/* Title */}
+        <h1 className="text-3xl font-bold text-white mb-6">Дневник</h1>
+
         {/* Calendar Strip */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center">
           {weekDays.map((day) => (
-            <button
-              key={day.day}
-              onClick={() => setSelectedDay(day.day)}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${
-                selectedDay === day.day
-                  ? "bg-orange-500 text-white"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              <span className="text-xs font-medium">{day.day}</span>
+            <div key={day.shortName} className="flex flex-col items-center gap-1.5">
+              <span className={`text-xs font-medium ${day.status === "today" ? "text-orange-500" : "text-gray-500"}`}>
+                {day.shortName}
+              </span>
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                  day.status === "completed"
-                    ? selectedDay === day.day
-                      ? "bg-white text-orange-500"
-                      : "bg-green-500 text-white"
-                    : day.status === "planned"
-                    ? selectedDay === day.day
-                      ? "bg-white text-orange-500"
-                      : "bg-orange-200 text-orange-700"
-                    : "bg-gray-200 text-gray-500"
-                }`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${getDayCircleStyle(day)}`}
               >
-                {day.status === "completed" ? "✓" : day.date}
+                {getDayIndicator(day)}
               </div>
-            </button>
+            </div>
           ))}
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="px-6 pb-24">
-        {/* Next Workout */}
-        <section className="mb-6">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-            NEXT WORKOUT
-          </p>
-          <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-white">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">{upcomingWorkout.time}</p>
-                  <h3 className="text-lg font-bold text-gray-900">{upcomingWorkout.name}</h3>
-                </div>
-                <Link href="/workout">
-                  <Button
-                    size="icon"
-                    className="bg-orange-500 hover:bg-orange-600 h-12 w-12 rounded-full"
-                  >
-                    <Play className="w-5 h-5 ml-0.5" />
-                  </Button>
-                </Link>
+      <main className="px-5 pb-28 pt-4">
+        {/* Current Workout Button */}
+        <Link href="/workout" className="block mb-6">
+          <div className="bg-orange-500 rounded-2xl p-4 flex items-center gap-3">
+            <div className="w-1.5 h-12 bg-white/30 rounded-full" />
+            <div>
+              <p className="text-white/80 text-sm">{currentWorkout.label}</p>
+              <p className="text-white font-bold text-lg">{currentWorkout.name}</p>
+            </div>
+          </div>
+        </Link>
+
+        {/* Week Sections */}
+        {weekSections.map((section, sectionIndex) => (
+          <section key={sectionIndex} className="mb-6">
+            {/* Section Header */}
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-white text-lg font-semibold">{section.title}</h2>
+              <button className="text-gray-500">
+                <MoreHorizontal className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Stats */}
+            <div className="flex gap-2 mb-4">
+              <div className="bg-gray-800 rounded-full px-3 py-1.5 flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-gray-400" />
+                <span className="text-white text-sm font-medium">{section.trophyCount}</span>
               </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* This Week Summary */}
-        <section className="mb-6">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-            THIS WEEK
-          </p>
-          <div className="flex gap-4">
-            <div className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-orange-500" />
-              <span className="text-2xl font-bold text-gray-900">5</span>
+              <div className="bg-gray-800 rounded-full px-3 py-1.5">
+                <span className="text-white text-sm font-medium">{section.workoutsCount} тренировки</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Dumbbell className="w-5 h-5 text-orange-500" />
-              <span className="text-2xl font-bold text-gray-900">25</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Flame className="w-5 h-5 text-orange-500" />
-              <span className="text-2xl font-bold text-gray-900">100 kg</span>
-            </div>
-          </div>
-        </section>
 
-        {/* Recent Workouts */}
-        <section>
-          <div className="space-y-3">
-            {workouts.map((workout) => (
-              <Card
-                key={workout.id}
-                className={`border-l-4 ${typeColors[workout.type]} shadow-sm hover:shadow-md transition-shadow cursor-pointer`}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-500 mb-1">{workout.date}</p>
-                      <h4 className="font-bold text-gray-900 mb-2">{workout.name}</h4>
-
-                      <div className="flex items-center gap-3 text-sm text-gray-600">
-                        {workout.volume && (
-                          <span className="flex items-center gap-1">
-                            <Dumbbell className="w-4 h-4" />
-                            {workout.volume}
-                          </span>
-                        )}
-                        {workout.heartRate && (
-                          <span className="flex items-center gap-1">
-                            <span className="text-red-500">♥</span>
-                            {workout.heartRate}
-                          </span>
-                        )}
-                        {workout.calories && (
-                          <span className="flex items-center gap-1">
-                            <Flame className="w-4 h-4 text-orange-500" />
-                            {workout.calories} cal
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          {workout.duration}
-                        </span>
-                      </div>
-
-                      {workout.note && (
-                        <p className="mt-2 text-sm text-gray-600">
-                          {workout.emoji} {workout.note}
-                        </p>
-                      )}
-                    </div>
-
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
+            {/* Workout Cards */}
+            <div className="space-y-3">
+              {section.workouts.map((workout) => (
+                <div
+                  key={workout.id}
+                  className="bg-gray-900 rounded-2xl p-4 flex items-start gap-3"
+                >
+                  <div className="w-1.5 h-12 bg-orange-500 rounded-full shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-gray-500 text-sm mb-0.5">{workout.dayName}</p>
+                    <h3 className="text-white font-bold text-base mb-2">{workout.name}</h3>
+                    <p className="text-gray-400 text-sm">
+                      {workout.duration} · {workout.volume} · {workout.calories} ккал
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 px-6 py-3">
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-gray-900 border-t border-gray-800 px-2 pt-2 pb-6">
         <div className="flex justify-around items-center">
           <button
             onClick={() => setActiveTab("journal")}
-            className={`flex flex-col items-center gap-1 ${
-              activeTab === "journal" ? "text-orange-500" : "text-gray-400"
+            className={`flex flex-col items-center gap-1 py-2 px-3 ${
+              activeTab === "journal" ? "text-orange-500" : "text-gray-500"
             }`}
           >
-            <BookOpen className="w-6 h-6" />
-            <span className="text-xs font-medium">Journal</span>
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+              <rect x="9" y="3" width="6" height="4" rx="2" />
+              <path d="M9 14h6" />
+              <path d="M9 10h6" />
+            </svg>
+            <span className="text-xs font-medium">Дневник</span>
           </button>
 
           <button
             onClick={() => setActiveTab("results")}
-            className={`flex flex-col items-center gap-1 ${
-              activeTab === "results" ? "text-orange-500" : "text-gray-400"
+            className={`flex flex-col items-center gap-1 py-2 px-3 ${
+              activeTab === "results" ? "text-orange-500" : "text-gray-500"
             }`}
           >
             <BarChart3 className="w-6 h-6" />
-            <span className="text-xs font-medium">Results</span>
+            <span className="text-xs font-medium">Результаты</span>
           </button>
 
           <button
             onClick={() => setActiveTab("exercises")}
-            className={`flex flex-col items-center gap-1 ${
-              activeTab === "exercises" ? "text-orange-500" : "text-gray-400"
+            className={`flex flex-col items-center gap-1 py-2 px-3 ${
+              activeTab === "exercises" ? "text-orange-500" : "text-gray-500"
             }`}
           >
             <Dumbbell className="w-6 h-6" />
-            <span className="text-xs font-medium">Exercises</span>
+            <span className="text-xs font-medium">Упражнения</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("settings")}
+            className={`flex flex-col items-center gap-1 py-2 px-3 ${
+              activeTab === "settings" ? "text-orange-500" : "text-gray-500"
+            }`}
+          >
+            <Settings className="w-6 h-6" />
+            <span className="text-xs font-medium">Настройки</span>
           </button>
         </div>
       </nav>

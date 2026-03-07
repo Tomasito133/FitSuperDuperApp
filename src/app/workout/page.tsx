@@ -166,7 +166,7 @@ export default function WorkoutPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-zinc-900 min-h-screen shadow-xl flex flex-col text-white">
+    <div className="max-w-md mx-auto bg-gray-950 min-h-screen shadow-xl flex flex-col text-white">
       {/* Header */}
       <header className={`px-6 py-4 text-center transition-colors ${
         isResting ? "bg-red-600" : "bg-red-700"
@@ -191,17 +191,17 @@ export default function WorkoutPage() {
       </header>
 
       {/* Exercise Info */}
-      <div className="px-6 py-4 border-b border-zinc-800">
+      <div className="px-6 py-4 border-b border-gray-800">
         <div className="flex items-center justify-between mb-4">
-          <button className="p-2 hover:bg-zinc-800 rounded-full">
-            <ChevronLeft className="w-5 h-5 text-zinc-500" />
+          <button className="p-2 hover:bg-gray-800 rounded-full">
+            <ChevronLeft className="w-5 h-5 text-gray-500" />
           </button>
-          <button className="p-2 hover:bg-zinc-800 rounded-full">
-            <MoreHorizontal className="w-5 h-5 text-zinc-500" />
+          <button className="p-2 hover:bg-gray-800 rounded-full">
+            <MoreHorizontal className="w-5 h-5 text-gray-500" />
           </button>
         </div>
         <h2 className="text-xl font-bold text-orange-500 text-center">{currentExercise.name}</h2>
-        <p className="text-sm text-zinc-400 text-center mt-1 uppercase">{currentExercise.muscleGroup}</p>
+        <p className="text-sm text-gray-400 text-center mt-1 uppercase">{currentExercise.muscleGroup}</p>
       </div>
 
       {/* Sets List */}
@@ -215,16 +215,16 @@ export default function WorkoutPage() {
               key={set.id}
               className={`border-0 ${
                 isCurrent 
-                  ? "bg-zinc-700/50" 
+                  ? "bg-gray-700/50" 
                   : isCompleted 
-                    ? "bg-zinc-800/50 opacity-60" 
-                    : "bg-zinc-800"
+                    ? "bg-gray-800/50 opacity-60" 
+                    : "bg-gray-800"
               }`}
             >
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
                   <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium ${
-                    isCurrent ? "bg-orange-500 text-white" : "bg-zinc-700 text-zinc-400"
+                    isCurrent ? "bg-orange-500 text-white" : "bg-gray-700 text-gray-400"
                   }`}>
                     {index + 1}
                   </span>
@@ -238,10 +238,10 @@ export default function WorkoutPage() {
                         disabled={isCompleted}
                         className={`w-16 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent focus:border-orange-500 focus:outline-none ${
                           isCurrent ? "text-orange-500" : "text-white"
-                        } ${isCompleted ? "opacity-50" : "hover:border-zinc-600"}`}
+                        } ${isCompleted ? "opacity-50" : "hover:border-gray-600"}`}
                       />
                     </div>
-                    <span className="text-zinc-500 text-lg">кг ×</span>
+                    <span className="text-gray-500 text-lg">кг ×</span>
                     <div className="text-center">
                       <input
                         type="number"
@@ -250,7 +250,7 @@ export default function WorkoutPage() {
                         disabled={isCompleted}
                         className={`w-14 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent focus:border-orange-500 focus:outline-none ${
                           isCurrent ? "text-orange-500" : "text-white"
-                        } ${isCompleted ? "opacity-50" : "hover:border-zinc-600"}`}
+                        } ${isCompleted ? "opacity-50" : "hover:border-gray-600"}`}
                       />
                     </div>
                   </div>
@@ -261,8 +261,8 @@ export default function WorkoutPage() {
                       disabled={isCompleted}
                       className={`text-center text-xs rounded px-2 py-2 min-w-[50px] transition-colors ${
                         isCompleted 
-                          ? "text-zinc-600 bg-zinc-800" 
-                          : "text-zinc-400 hover:text-orange-500 bg-zinc-700/50"
+                          ? "text-gray-600 bg-gray-800" 
+                          : "text-gray-400 hover:text-orange-500 bg-gray-700/50"
                       }`}
                     >
                       {editingTimer === set.id ? (
@@ -286,7 +286,7 @@ export default function WorkoutPage() {
                     {!isCompleted && (
                       <button
                         onClick={() => deleteSet(set.id)}
-                        className="p-2 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                        className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                         title="Удалить"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -301,19 +301,19 @@ export default function WorkoutPage() {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="border-t border-zinc-800 px-6 py-4 bg-zinc-900">
+      <div className="border-t border-gray-800 px-6 py-4 bg-gray-900">
         <div className="flex items-center justify-between">
           <button
             onClick={() => setCurrentExerciseIndex(Math.max(0, currentExerciseIndex - 1))}
             disabled={currentExerciseIndex === 0}
-            className="p-3 text-zinc-500 hover:text-white disabled:opacity-30"
+            className="p-3 text-gray-500 hover:text-white disabled:opacity-30"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
 
           <button
             onClick={addSet}
-            className="p-3 text-zinc-500 hover:text-white"
+            className="p-3 text-gray-500 hover:text-white"
           >
             <Plus className="w-6 h-6" />
           </button>
@@ -335,7 +335,7 @@ export default function WorkoutPage() {
             )}
           </button>
 
-          <button className="p-3 text-zinc-500 hover:text-white"
+          <button className="p-3 text-gray-500 hover:text-white"
           >
             <Clock className="w-6 h-6" />
           </button>
@@ -345,7 +345,7 @@ export default function WorkoutPage() {
               setCurrentExerciseIndex(Math.min(exercises.length - 1, currentExerciseIndex + 1))
             }
             disabled={currentExerciseIndex === exercises.length - 1}
-            className="p-3 text-zinc-500 hover:text-white disabled:opacity-30"
+            className="p-3 text-gray-500 hover:text-white disabled:opacity-30"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
