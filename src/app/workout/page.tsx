@@ -185,7 +185,7 @@ export default function ActiveWorkoutPage() {
                 </div>
                 <button
                   onClick={() => handleDeleteExercise(exercise.id)}
-                  className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                  className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                   title="Удалить"
                 >
                   <Trash2 className="w-5 h-5" />
