@@ -210,9 +210,10 @@ export default function JournalPage() {
             {/* Workout Cards */}
             <div className="space-y-3">
               {section.workouts.map((workout) => (
-                <div
+                <Link
                   key={workout.id}
-                  className="bg-gray-900 rounded-2xl p-4 flex items-start gap-3"
+                  href={`/workout/${workout.id}`}
+                  className="block bg-gray-900 rounded-2xl p-4 flex items-start gap-3 hover:bg-gray-800 transition-colors"
                 >
                   <div className="w-1.5 h-12 bg-orange-500 rounded-full shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
@@ -222,7 +223,7 @@ export default function JournalPage() {
                       {workout.duration} · {workout.volume} · {workout.calories} ккал
                     </p>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </section>
