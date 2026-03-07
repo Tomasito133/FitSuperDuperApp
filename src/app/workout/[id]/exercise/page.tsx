@@ -248,12 +248,13 @@ export default function ExerciseSetsPage() {
   const addSet = () => {
     setExercise((prev) => {
       const lastSet = prev.sets[prev.sets.length - 1];
+      const newSetId = Date.now() + Math.random();
       return {
         ...prev,
         sets: [
           ...prev.sets,
           {
-            id: Date.now(),
+            id: newSetId,
             weight: lastSet?.weight ?? 0,
             reps: lastSet?.reps ?? 0,
             restTime: lastSet?.restTime ?? 120,
@@ -326,9 +327,14 @@ export default function ExerciseSetsPage() {
 
                 <div className="flex-1 flex items-center justify-center gap-2">
                   <input
-                    type="number"
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={set.weight}
-                    onChange={(e) => updateSet(set.id, "weight", parseInt(e.target.value) || 0)}
+                    onChange={(e) => {
+                      const val = e.target.value === "" ? 0 : parseInt(e.target.value, 10);
+                      updateSet(set.id, "weight", isNaN(val) ? 0 : val);
+                    }}
                     disabled={isCompleted}
                     className={`w-16 text-4xl font-bold text-center bg-transparent focus:outline-none ${
                       isCurrent ? "text-orange-500" : "text-white"
@@ -337,9 +343,14 @@ export default function ExerciseSetsPage() {
                   <span className="text-gray-500 text-lg">кг ×</span>
                   
                   <input
-                    type="number"
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={set.reps}
-                    onChange={(e) => updateSet(set.id, "reps", parseInt(e.target.value) || 0)}
+                    onChange={(e) => {
+                      const val = e.target.value === "" ? 0 : parseInt(e.target.value, 10);
+                      updateSet(set.id, "reps", isNaN(val) ? 0 : val);
+                    }}
                     disabled={isCompleted}
                     className={`w-14 text-4xl font-bold text-center bg-transparent focus:outline-none ${
                       isCurrent ? "text-orange-500" : "text-white"

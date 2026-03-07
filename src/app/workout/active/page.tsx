@@ -156,7 +156,7 @@ export default function ActiveWorkoutModePage() {
       const lastSet = sets[sets.length - 1];
       
       sets.push({
-        id: Date.now(),
+        id: Date.now() + Math.random(),
         weight: lastSet?.weight ?? 0,
         reps: lastSet?.reps ?? 0,
         restTime: lastSet?.restTime ?? 120,
