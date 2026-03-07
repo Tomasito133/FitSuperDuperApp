@@ -47,6 +47,24 @@ interface WeekSection {
   workouts: Workout[];
 }
 
+// Тип для шаблона тренировки
+interface WorkoutTemplate {
+  id: string;
+  name: string;
+  muscleGroup: string;
+}
+
+// Шаблоны тренировок
+const workoutTemplates: WorkoutTemplate[] = [
+  { id: "t1", name: "Верх", muscleGroup: "Спина, грудь, плечи" },
+  { id: "t2", name: "Низ", muscleGroup: "Ноги, ягодицы" },
+  { id: "t3", name: "Грудь и трицепс", muscleGroup: "Грудь, трицепс" },
+  { id: "t4", name: "Спина и бицепс", muscleGroup: "Спина, бицепс" },
+  { id: "t5", name: "Плечи", muscleGroup: "Дельты" },
+  { id: "t6", name: "Руки", muscleGroup: "Бицепс, трицепс" },
+  { id: "t7", name: "Ноги", muscleGroup: "Квадрицепс, бицепс бедра" },
+];
+
 // Мок-данные
 const weekDays: DayStatus[] = [
   { shortName: "Пн", fullName: "Понедельник", date: 2, status: "rest" },
@@ -147,6 +165,10 @@ export default function JournalPage() {
   const [activeTab, setActiveTab] = useState("journal");
   const [selectedDay, setSelectedDay] = useState("Сб");
   const [weekSections, setWeekSections] = useState<WeekSection[]>(initialWeekSections);
+  
+  // Состояние для модалки шаблонов
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
+  const [pastWorkouts, setPastWorkouts] = useState<Workout[]>([]);
 
   // Состояние для редактирования названия тренировки
   const [editingWorkoutId, setEditingWorkoutId] = useState<string | null>(null);
@@ -172,6 +194,31 @@ export default function JournalPage() {
           })
         }))
       );
+      
+      // Загружаем все прошедшие тренировки из localStorage
+      const allPastWorkouts: Workout[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("workout_")) {
+          const workoutId = key.replace("workout_", "");
+          // Пропускаем если это уже в текущих секциях
+          const saved = localStorage.getItem(key);
+          if (saved) {
+            try {
+              const workoutData: WorkoutDetail = JSON.parse(saved);
+              allPastWorkouts.push({
+                id: workoutId,
+                dayName: "",
+                name: workoutData.name,
+                duration: workoutData.duration,
+                volume: workoutData.volume,
+                muscleGroup: "",
+              });
+            } catch {}
+          }
+        }
+      }
+      setPastWorkouts(allPastWorkouts);
     };
 
     loadWorkoutData();
@@ -181,6 +228,24 @@ export default function JournalPage() {
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
   }, []);
+  
+  // Создать тренировку из шаблона
+  const handleCreateFromTemplate = (template: WorkoutTemplate) => {
+    const newWorkoutId = Date.now().toString();
+    const newWorkout: WorkoutDetail = {
+      id: newWorkoutId,
+      name: template.name,
+      duration: "0:00:00",
+      volume: "0",
+      exercises: [],
+    };
+    
+    localStorage.setItem(`workout_${newWorkoutId}`, JSON.stringify(newWorkout));
+    setIsTemplatesOpen(false);
+    
+    // Переходим на страницу новой тренировки
+    window.location.href = `/workout/${newWorkoutId}`;
+  };
 
   // Начать редактирование названия
   const handleStartEditing = (workout: Workout) => {
@@ -247,7 +312,10 @@ export default function JournalPage() {
         {/* Templates row */}
         <div className="flex items-center justify-between mb-4">
           <span className="text-orange-500 font-medium text-base">Шаблоны</span>
-          <button className="w-8 h-8 flex items-center justify-center text-orange-500">
+          <button 
+            onClick={() => setIsTemplatesOpen(true)}
+            className="w-8 h-8 flex items-center justify-center text-orange-500"
+          >
             <Plus className="w-6 h-6" />
           </button>
         </div>
@@ -420,6 +488,77 @@ export default function JournalPage() {
           </Link>
         </div>
       </nav>
+
+      {/* Templates Modal */}
+      {isTemplatesOpen && (
+        <div className="fixed inset-0 z-50 flex items-end">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsTemplatesOpen(false)}
+          />
+          
+          <div className="relative w-full max-w-md mx-auto bg-gray-900 rounded-t-3xl p-6 animate-slide-up max-h-[80vh] overflow-y-auto">
+            <div className="w-12 h-1 bg-gray-700 rounded-full mx-auto mb-6" />
+            
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-white">Новая тренировка</h2>
+              <button 
+                onClick={() => setIsTemplatesOpen(false)}
+                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Шаблоны */}
+            <div className="mb-8">
+              <h3 className="text-orange-500 text-sm font-medium mb-3 uppercase tracking-wider">Шаблоны</h3>
+              <div className="space-y-2">
+                {workoutTemplates.map((template) => (
+                  <button
+                    key={template.id}
+                    onClick={() => handleCreateFromTemplate(template)}
+                    className="w-full py-4 px-4 bg-gray-800 rounded-xl text-left hover:bg-gray-700 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-white font-medium">{template.name}</p>
+                        <p className="text-gray-500 text-sm">{template.muscleGroup}</p>
+                      </div>
+                      <span className="text-orange-500">→</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Прошлые тренировки */}
+            {pastWorkouts.length > 0 && (
+              <div>
+                <h3 className="text-orange-500 text-sm font-medium mb-3 uppercase tracking-wider">Недавние</h3>
+                <div className="space-y-2">
+                  {pastWorkouts.slice(0, 5).map((workout) => (
+                    <Link
+                      key={workout.id}
+                      href={`/workout/${workout.id}`}
+                      onClick={() => setIsTemplatesOpen(false)}
+                      className="block py-4 px-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-white font-medium">{workout.name}</p>
+                          <p className="text-gray-500 text-sm">{workout.volume} · {workout.duration}</p>
+                        </div>
+                        <span className="text-orange-500">→</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
