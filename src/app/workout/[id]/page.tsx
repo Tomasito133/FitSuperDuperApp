@@ -11,7 +11,8 @@ import {
   Pause,
   Check,
   Clock,
-  Dumbbell
+  Dumbbell,
+  Search
 } from "lucide-react";
 
 interface Set {
@@ -152,6 +153,13 @@ export default function WorkoutDetailPage() {
   const [elapsedTime, setElapsedTime] = useState("1:18:32");
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredExercises = searchQuery
+    ? availableExercises.filter(ex => 
+        ex.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : availableExercises;
 
   const handleAddExercise = () => {
     if (!selectedExercise) return;
@@ -168,6 +176,7 @@ export default function WorkoutDetailPage() {
     }));
 
     setSelectedExercise("");
+    setSearchQuery("");
     setIsAddExerciseOpen(false);
   };
 
@@ -267,10 +276,20 @@ export default function WorkoutDetailPage() {
               </button>
             </div>
 
-            <p className="text-gray-400 text-sm mb-3">Выберите из библиотеки</p>
+            {/* Search */}
+            <div className="relative mb-4">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+              <input
+                type="text"
+                placeholder="Поиск"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-gray-800 text-white placeholder-gray-500 rounded-xl py-3 pl-12 pr-4 text-base focus:outline-none focus:ring-2 focus:ring-orange-500/50"
+              />
+            </div>
             
             <div className="max-h-64 overflow-y-auto space-y-2 mb-6">
-              {availableExercises.map((exercise) => (
+              {filteredExercises.map((exercise) => (
                 <button
                   key={exercise}
                   onClick={() => setSelectedExercise(exercise)}
@@ -283,14 +302,10 @@ export default function WorkoutDetailPage() {
                   {exercise}
                 </button>
               ))}
+              {filteredExercises.length === 0 && (
+                <p className="text-gray-500 text-center py-4">Ничего не найдено</p>
+              )}
             </div>
-
-            <Link
-              href="/exercises"
-              className="block w-full py-3 px-4 bg-gray-800 text-orange-500 rounded-xl text-center font-medium hover:bg-gray-700 transition-colors mb-4"
-            >
-              Открыть библиотеку →
-            </Link>
 
             <button
               onClick={handleAddExercise}
