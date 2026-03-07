@@ -311,7 +311,9 @@ export default function JournalPage() {
       <header className="px-5 pt-6 pb-2">
         {/* Templates row */}
         <div className="flex items-center justify-between mb-4">
-          <span className="text-orange-500 font-medium text-base">Шаблоны</span>
+          <Link href="/templates" className="text-orange-500 font-medium text-base hover:text-orange-400 transition-colors">
+            Шаблоны
+          </Link>
           <button 
             onClick={() => setIsTemplatesOpen(true)}
             className="w-8 h-8 flex items-center justify-center text-orange-500"
