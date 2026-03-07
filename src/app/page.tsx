@@ -100,6 +100,7 @@ const weekSections: WeekSection[] = [
 
 export default function JournalPage() {
   const [activeTab, setActiveTab] = useState("journal");
+  const [selectedDay, setSelectedDay] = useState("Сб");
 
   const getDayCircleStyle = (day: DayStatus) => {
     switch (day.status) {
@@ -143,16 +144,30 @@ export default function JournalPage() {
         {/* Calendar Strip */}
         <div className="flex justify-between items-center">
           {weekDays.map((day) => (
-            <div key={day.shortName} className="flex flex-col items-center gap-1.5">
-              <span className={`text-xs font-medium ${day.status === "today" ? "text-orange-500" : "text-gray-500"}`}>
+            <button
+              key={day.shortName}
+              onClick={() => setSelectedDay(day.shortName)}
+              className="flex flex-col items-center gap-1.5"
+            >
+              <span className={`text-xs font-medium ${
+                selectedDay === day.shortName 
+                  ? "text-orange-500" 
+                  : day.status === "today" 
+                    ? "text-orange-500" 
+                    : "text-gray-500"
+              }`}>
                 {day.shortName}
               </span>
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center ${getDayCircleStyle(day)}`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                  selectedDay === day.shortName
+                    ? "bg-orange-500 text-white ring-2 ring-orange-500/50"
+                    : getDayCircleStyle(day)
+                }`}
               >
                 {getDayIndicator(day)}
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </header>
