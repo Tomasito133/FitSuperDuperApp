@@ -12,7 +12,8 @@ import {
   Check,
   Clock,
   Dumbbell,
-  Search
+  Search,
+  Trash2
 } from "lucide-react";
 
 interface Set {
@@ -196,6 +197,13 @@ export default function WorkoutDetailPage() {
     setIsAddExerciseOpen(false);
   };
 
+  const handleDeleteExercise = (exerciseId: string) => {
+    setWorkout(prev => ({
+      ...prev,
+      exercises: prev.exercises.filter(ex => ex.id !== exerciseId),
+    }));
+  };
+
   return (
     <div className="max-w-md mx-auto bg-gray-950 min-h-screen shadow-xl flex flex-col">
       {/* Header */}
@@ -235,13 +243,20 @@ export default function WorkoutDetailPage() {
       <main className="flex-1 px-5 py-4 pb-32 overflow-y-auto">
         <div className="space-y-4">
           {workout.exercises.map((exercise, index) => (
-            <div key={exercise.id} className="py-3 border-b border-gray-800 last:border-0">
+            <div key={exercise.id} className="py-3 border-b border-gray-800 last:border-0 group">
               <div className="flex items-start gap-3">
                 <span className="text-orange-500 font-bold text-lg w-6">{index + 1}</span>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <h3 className="text-white font-medium text-base mb-1">{exercise.name}</h3>
                   <p className="text-gray-500 text-sm">{formatSets(exercise.sets)}</p>
                 </div>
+                <button
+                  onClick={() => handleDeleteExercise(exercise.id)}
+                  className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                  title="Удалить"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
               </div>
             </div>
           ))}
