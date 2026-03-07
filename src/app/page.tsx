@@ -346,21 +346,23 @@ export default function JournalPage() {
             <button
               key={day.shortName}
               onClick={() => setSelectedDay(day.shortName)}
-              className="flex flex-col items-center gap-1.5"
+              className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all ${
+                day.status === "today"
+                  ? "ring-2 ring-orange-500/50 bg-gray-800/50"
+                  : ""
+              }`}
             >
               <span className={`text-xs font-medium ${
-                selectedDay === day.shortName 
-                  ? "text-orange-500" 
-                  : day.status === "today" 
-                    ? "text-orange-500" 
-                    : "text-gray-500"
+                day.status === "today"
+                  ? "text-orange-500"
+                  : "text-gray-500"
               }`}>
                 {day.shortName}
               </span>
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
                   day.status === "today"
-                    ? "bg-orange-500 text-white ring-2 ring-orange-500/50"
+                    ? "bg-orange-500 text-white"
                     : selectedDay === day.shortName
                       ? "bg-orange-500 text-white"
                       : getDayCircleStyle(day)
