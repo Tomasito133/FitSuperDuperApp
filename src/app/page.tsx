@@ -205,26 +205,29 @@ export default function JournalPage() {
         }))
       );
       
-      // Загружаем все прошедшие тренировки из localStorage
+      // Загружаем все прошедшие тренировки из localStorage (только реальные тренировки, не шаблоны)
       const allPastWorkouts: Workout[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith("workout_") && !key.includes("_exercise_")) {
+        // Ищем только ключи вида workout_123 (ID тренировки), исключаем шаблоны и exercise данные
+        if (key && key.startsWith("workout_") && !key.includes("_exercise_") && key !== "workout_templates") {
           const workoutId = key.replace("workout_", "");
-          // Пропускаем если это уже в текущих секциях
-          const saved = localStorage.getItem(key);
-          if (saved) {
-            try {
-              const workoutData: WorkoutDetail = JSON.parse(saved);
-              allPastWorkouts.push({
-                id: workoutId,
-                dayName: "",
-                name: workoutData.name,
-                duration: workoutData.duration,
-                volume: workoutData.volume,
-                muscleGroup: "",
-              });
-            } catch {}
+          // Проверяем что ID - это число (реальная тренировка), а не строка типа "templates"
+          if (/^\d+$/.test(workoutId)) {
+            const saved = localStorage.getItem(key);
+            if (saved) {
+              try {
+                const workoutData: WorkoutDetail = JSON.parse(saved);
+                allPastWorkouts.push({
+                  id: workoutId,
+                  dayName: "",
+                  name: workoutData.name,
+                  duration: workoutData.duration,
+                  volume: workoutData.volume,
+                  muscleGroup: "",
+                });
+              } catch {}
+            }
           }
         }
       }
