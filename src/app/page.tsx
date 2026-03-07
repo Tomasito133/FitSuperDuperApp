@@ -209,7 +209,7 @@ export default function JournalPage() {
       const allPastWorkouts: Workout[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith("workout_")) {
+        if (key && key.startsWith("workout_") && !key.includes("_exercise_")) {
           const workoutId = key.replace("workout_", "");
           // Пропускаем если это уже в текущих секциях
           const saved = localStorage.getItem(key);
@@ -228,7 +228,9 @@ export default function JournalPage() {
           }
         }
       }
-      setPastWorkouts(allPastWorkouts);
+      // Сортируем по ID (новые первые) и берём последние 5
+      allPastWorkouts.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+      setPastWorkouts(allPastWorkouts.slice(0, 5));
     };
 
     loadWorkoutData();
@@ -561,10 +563,7 @@ export default function JournalPage() {
                       className="block py-4 px-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors"
                     >
                       <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-white font-medium">{workout.name}</p>
-                          <p className="text-gray-500 text-sm">{workout.volume} · {workout.duration}</p>
-                        </div>
+                        <p className="text-white font-medium">{workout.name}</p>
                         <span className="text-orange-500">→</span>
                       </div>
                     </Link>
