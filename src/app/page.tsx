@@ -175,7 +175,7 @@ export default function JournalPage() {
       {/* Main Content */}
       <main className="px-5 pb-28 pt-4">
         {/* Current Workout Button */}
-        <Link href="/workout/active" className="block mb-6">
+        <Link href="/workout/current" className="block mb-6">
           <div className="bg-orange-500 rounded-2xl p-4 flex items-center gap-3">
             <div className="w-1.5 h-12 bg-white/30 rounded-full" />
             <div>
