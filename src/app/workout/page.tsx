@@ -1,356 +1,267 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  Play,
+import Link from "next/link";
+import { 
+  ChevronLeft, 
+  MoreHorizontal, 
+  Plus, 
+  Play, 
   Pause,
   Check,
-  ChevronRight,
-  ChevronLeft,
-  MoreHorizontal,
-  Plus,
   Clock,
-  Trash2,
+  Dumbbell
 } from "lucide-react";
 
 interface Set {
-  id: number;
   weight: number;
   reps: number;
-  restTime: number;
 }
 
-interface Exercise {
+interface ExerciseInWorkout {
   id: string;
   name: string;
-  muscleGroup: string;
   sets: Set[];
 }
 
-export default function WorkoutPage() {
-  const [isActive, setIsActive] = useState(false);
-  const [workoutTime, setWorkoutTime] = useState(0);
-  const [restTime, setRestTime] = useState(0);
-  const [isResting, setIsResting] = useState(false);
-  const [currentSetIndex, setCurrentSetIndex] = useState(0);
-  const [isSetActive, setIsSetActive] = useState(false);
-  const [completedSets, setCompletedSets] = useState<number[]>([]);
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [editingTimer, setEditingTimer] = useState<number | null>(null);
-  const [exercises, setExercises] = useState<Exercise[]>([
+interface WorkoutDetail {
+  id: string;
+  name: string;
+  duration: string;
+  volume: string;
+  exercises: ExerciseInWorkout[];
+}
+
+// Текущая активная тренировка
+const initialWorkout: WorkoutDetail = {
+  id: "current",
+  name: "Верх",
+  duration: "0:00:00",
+  volume: "0",
+  exercises: [
     {
-      id: "1",
-      name: "Тяга верхнего блока узким хватом",
-      muscleGroup: "ШИРОЧАЙШИЕ",
+      id: "e1",
+      name: "Подтягивания с резиной",
       sets: [
-        { id: 1, weight: 52, reps: 12, restTime: 120 },
-        { id: 2, weight: 52, reps: 10, restTime: 120 },
-        { id: 3, weight: 52, reps: 10, restTime: 120 },
+        { weight: 0, reps: 12 },
+        { weight: 0, reps: 12 },
+        { weight: 0, reps: 12 },
       ],
     },
-  ]);
+    {
+      id: "e2",
+      name: "Тяга верхнего блока узким хватом",
+      sets: [
+        { weight: 52, reps: 12 },
+        { weight: 52, reps: 10 },
+        { weight: 52, reps: 10 },
+      ],
+    },
+  ],
+};
 
-  const currentExercise = exercises[currentExerciseIndex];
-  const currentSet = currentExercise.sets[currentSetIndex];
+// Доступные упражнения из библиотеки
+const availableExercises = [
+  "Подтягивания",
+  "Тяга верхнего блока",
+  "Тяга штанги в наклоне",
+  "Жим штанги лёжа",
+  "Жим гантелей",
+  "Махи с гантелями",
+  "Сгибания на бицепс",
+  "Разгибания на трицепс",
+  "Приседания",
+  "Выпады",
+  "Становая тяга",
+];
+
+function formatSets(sets: Set[]) {
+  if (sets.every(s => s.weight === 0)) {
+    return sets.map(s => s.reps).join(", ");
+  }
+  return sets.map(s => `${s.weight} кг × ${s.reps}`).join(", ");
+}
+
+function formatTime(totalSeconds: number) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const mins = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
+  return `${hours}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+}
+
+export default function ActiveWorkoutPage() {
+  const [workout, setWorkout] = useState(initialWorkout);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState("");
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isActive && !isResting) {
+    if (isTimerRunning) {
       interval = setInterval(() => {
-        setWorkoutTime((t) => t + 1);
+        setElapsedSeconds((s) => s + 1);
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isActive, isResting]);
+  }, [isTimerRunning]);
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isResting && restTime > 0) {
-      interval = setInterval(() => {
-        setRestTime((t) => {
-          if (t <= 1) {
-            setIsResting(false);
-            setIsSetActive(false);
-            if (currentSetIndex < currentExercise.sets.length - 1) {
-              setCurrentSetIndex((i) => i + 1);
-            }
-            return 0;
-          }
-          return t - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isResting, restTime, currentSetIndex, currentExercise.sets.length]);
+  const handleAddExercise = () => {
+    if (!selectedExercise) return;
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
+    const newExercise: ExerciseInWorkout = {
+      id: Date.now().toString(),
+      name: selectedExercise,
+      sets: [{ weight: 0, reps: 0 }],
+    };
+
+    setWorkout(prev => ({
+      ...prev,
+      exercises: [...prev.exercises, newExercise],
+    }));
+
+    setSelectedExercise("");
+    setIsAddExerciseOpen(false);
   };
 
-  const formatTimeShort = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const handleMainButton = () => {
-    if (isResting) {
-      setIsResting(false);
-      setRestTime(0);
-      setIsSetActive(false);
-      if (currentSetIndex < currentExercise.sets.length - 1) {
-        setCurrentSetIndex((i) => i + 1);
-      }
-    } else if (isSetActive) {
-      setCompletedSets([...completedSets, currentSet.id]);
-      setIsSetActive(false);
-      setIsResting(true);
-      setRestTime(currentSet.restTime);
-    } else {
-      setIsSetActive(true);
-      setIsActive(true);
-    }
-  };
-
-  const isSetCompleted = (setId: number) => completedSets.includes(setId);
-
-  const deleteSet = (setId: number) => {
-    setExercises((prev) => {
-      const newExercises = [...prev];
-      const sets = newExercises[currentExerciseIndex].sets;
-      const index = sets.findIndex((s) => s.id === setId);
-      if (index > -1) {
-        sets.splice(index, 1);
-        if (index < currentSetIndex) {
-          setCurrentSetIndex((i) => Math.max(0, i - 1));
-        }
-        if (currentSetIndex >= sets.length) {
-          setCurrentSetIndex(Math.max(0, sets.length - 1));
-        }
-      }
-      return newExercises;
-    });
-  };
-
-  const updateSet = (setId: number, field: "weight" | "reps" | "restTime", value: number) => {
-    setExercises((prev) => {
-      const newExercises = [...prev];
-      const set = newExercises[currentExerciseIndex].sets.find(
-        (s) => s.id === setId
-      );
-      if (set) {
-        set[field] = Math.max(0, value);
-      }
-      return newExercises;
-    });
-  };
-
-  const addSet = () => {
-    setExercises((prev) => {
-      const newExercises = [...prev];
-      const sets = newExercises[currentExerciseIndex].sets;
-      const lastSet = sets[sets.length - 1];
-      
-      sets.push({
-        id: Date.now(),
-        weight: lastSet?.weight ?? 0,
-        reps: lastSet?.reps ?? 0,
-        restTime: lastSet?.restTime ?? 120,
-      });
-      return newExercises;
-    });
+  const toggleTimer = () => {
+    setIsTimerRunning(!isTimerRunning);
   };
 
   return (
-    <div className="max-w-md mx-auto bg-gray-950 min-h-screen shadow-xl flex flex-col text-white">
+    <div className="max-w-md mx-auto bg-gray-950 min-h-screen shadow-xl flex flex-col">
       {/* Header */}
-      <header className={`px-6 py-4 text-center transition-colors ${
-        isResting ? "bg-red-600" : "bg-red-700"
-      }`}>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm opacity-80">
-            {isResting ? "ОТДЫХ" : `${currentSetIndex + 1} / ${currentExercise.sets.length}`}
-          </span>
-          <button
-            onClick={() => setIsActive(!isActive)}
-            className="p-2 rounded-full hover:bg-white/10"
-          >
-            {isActive ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-          </button>
-        </div>
-        <div className="text-4xl font-bold">
-          {isResting ? formatTime(restTime) : formatTime(workoutTime)}
-        </div>
-        <div className="text-sm uppercase tracking-wider mt-1 opacity-80">
-          {isResting ? formatTimeShort(currentSet.restTime) + " отдых" : isSetActive ? "В работе" : "Готов"}
-        </div>
-      </header>
-
-      {/* Exercise Info */}
-      <div className="px-6 py-4 border-b border-gray-800">
+      <header className="bg-orange-500 px-5 pt-12 pb-6">
         <div className="flex items-center justify-between mb-4">
-          <button className="p-2 hover:bg-gray-800 rounded-full">
-            <ChevronLeft className="w-5 h-5 text-gray-500" />
-          </button>
-          <button className="p-2 hover:bg-gray-800 rounded-full">
-            <MoreHorizontal className="w-5 h-5 text-gray-500" />
-          </button>
-        </div>
-        <h2 className="text-xl font-bold text-orange-500 text-center">{currentExercise.name}</h2>
-        <p className="text-sm text-gray-400 text-center mt-1 uppercase">{currentExercise.muscleGroup}</p>
-      </div>
-
-      {/* Sets List */}
-      <div className="flex-1 px-6 py-4 space-y-2">
-        {currentExercise.sets.map((set, index) => {
-          const isCurrent = index === currentSetIndex;
-          const isCompleted = isSetCompleted(set.id);
-          
-          return (
-            <Card
-              key={set.id}
-              className={`border-0 ${
-                isCurrent 
-                  ? "bg-gray-700/50" 
-                  : isCompleted 
-                    ? "bg-gray-800/50 opacity-60" 
-                    : "bg-gray-800"
-              }`}
-            >
-              <CardContent className="p-3">
-                <div className="flex items-center gap-3">
-                  <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium ${
-                    isCurrent ? "bg-orange-500 text-white" : "bg-gray-700 text-gray-400"
-                  }`}>
-                    {index + 1}
-                  </span>
-
-                  <div className="flex-1 flex items-center justify-center gap-2">
-                    <div className="text-center">
-                      <input
-                        type="number"
-                        value={set.weight}
-                        onChange={(e) => updateSet(set.id, "weight", parseInt(e.target.value) || 0)}
-                        disabled={isCompleted}
-                        className={`w-16 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent focus:border-orange-500 focus:outline-none ${
-                          isCurrent ? "text-orange-500" : "text-white"
-                        } ${isCompleted ? "opacity-50" : "hover:border-gray-600"}`}
-                      />
-                    </div>
-                    <span className="text-gray-500 text-lg">кг ×</span>
-                    <div className="text-center">
-                      <input
-                        type="number"
-                        value={set.reps}
-                        onChange={(e) => updateSet(set.id, "reps", parseInt(e.target.value) || 0)}
-                        disabled={isCompleted}
-                        className={`w-14 text-3xl font-bold text-center bg-transparent border-b-2 border-transparent focus:border-orange-500 focus:outline-none ${
-                          isCurrent ? "text-orange-500" : "text-white"
-                        } ${isCompleted ? "opacity-50" : "hover:border-gray-600"}`}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => !isCompleted && setEditingTimer(set.id)}
-                      disabled={isCompleted}
-                      className={`text-center text-xs rounded px-2 py-2 min-w-[50px] transition-colors ${
-                        isCompleted 
-                          ? "text-gray-600 bg-gray-800" 
-                          : "text-gray-400 hover:text-orange-500 bg-gray-700/50"
-                      }`}
-                    >
-                      {editingTimer === set.id ? (
-                        <input
-                          type="number"
-                          value={Math.floor(set.restTime / 60)}
-                          onChange={(e) => {
-                            const mins = parseInt(e.target.value) || 0;
-                            updateSet(set.id, "restTime", mins * 60);
-                          }}
-                          onBlur={() => setEditingTimer(null)}
-                          autoFocus
-                          className="w-10 text-center bg-transparent"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      ) : (
-                        formatTimeShort(set.restTime)
-                      )}
-                    </button>
-
-                    {!isCompleted && (
-                      <button
-                        onClick={() => deleteSet(set.id)}
-                        className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                        title="Удалить"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Bottom Navigation */}
-      <div className="border-t border-gray-800 px-6 py-4 bg-gray-900">
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setCurrentExerciseIndex(Math.max(0, currentExerciseIndex - 1))}
-            disabled={currentExerciseIndex === 0}
-            className="p-3 text-gray-500 hover:text-white disabled:opacity-30"
+          <Link 
+            href="/" 
+            className="w-10 h-10 flex items-center justify-center text-white/80 hover:text-white"
           >
             <ChevronLeft className="w-6 h-6" />
+          </Link>
+          <button 
+            onClick={toggleTimer}
+            className="flex items-center gap-2 text-white/80 hover:text-white"
+          >
+            <Clock className="w-4 h-4" />
+            <span className="text-sm">{formatTime(elapsedSeconds)}</span>
+            {isTimerRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
           </button>
+          <button className="w-10 h-10 flex items-center justify-center text-white/80 hover:text-white">
+            <MoreHorizontal className="w-6 h-6" />
+          </button>
+        </div>
 
+        <h1 className="text-3xl font-bold text-white">{workout.name}</h1>
+      </header>
+
+      {/* Volume Stats */}
+      <div className="px-5 py-4 border-b border-gray-800">
+        <div className="text-center">
+          <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">Объём</p>
+          <p className="text-white text-2xl font-bold">{workout.volume} кг</p>
+        </div>
+      </div>
+
+      {/* Exercises List */}
+      <main className="flex-1 px-5 py-4 pb-32 overflow-y-auto">
+        <div className="space-y-4">
+          {workout.exercises.map((exercise, index) => (
+            <div key={exercise.id} className="py-3 border-b border-gray-800 last:border-0">
+              <div className="flex items-start gap-3">
+                <span className="text-orange-500 font-bold text-lg w-6">{index + 1}</span>
+                <div className="flex-1">
+                  <h3 className="text-white font-medium text-base mb-1">{exercise.name}</h3>
+                  <p className="text-gray-500 text-sm">{formatSets(exercise.sets)}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+
+      {/* Bottom Actions */}
+      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-5 pb-8 pt-4 bg-gradient-to-t from-gray-950 via-gray-950 to-transparent">
+        <div className="flex items-center justify-between">
           <button
-            onClick={addSet}
-            className="p-3 text-gray-500 hover:text-white"
+            onClick={() => setIsAddExerciseOpen(true)}
+            className="w-14 h-14 bg-gray-800 rounded-full flex items-center justify-center text-orange-500 hover:bg-gray-700 transition-colors"
           >
             <Plus className="w-6 h-6" />
           </button>
 
-          <button
-            onClick={handleMainButton}
-            className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-colors ${
-              isResting 
-                ? "bg-red-500 hover:bg-red-600 shadow-red-500/30" 
-                : "bg-orange-500 hover:bg-orange-600 shadow-orange-500/30"
-            }`}
+          <Link 
+            href="/"
+            className="flex-1 mx-4 bg-orange-500 text-white font-semibold py-4 rounded-full hover:bg-orange-600 transition-colors text-center"
           >
-            {isResting ? (
-              <span className="text-sm font-bold">Skip</span>
-            ) : isSetActive ? (
-              <Check className="w-8 h-8" />
-            ) : (
-              <Play className="w-8 h-8 ml-1" />
-            )}
-          </button>
+            Завершить
+          </Link>
 
-          <button className="p-3 text-gray-500 hover:text-white"
+          <Link
+            href="/workout/active"
+            className="w-14 h-14 bg-gray-800 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
           >
-            <Clock className="w-6 h-6" />
-          </button>
-
-          <button
-            onClick={() =>
-              setCurrentExerciseIndex(Math.min(exercises.length - 1, currentExerciseIndex + 1))
-            }
-            disabled={currentExerciseIndex === exercises.length - 1}
-            className="p-3 text-gray-500 hover:text-white disabled:opacity-30"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
+            <Dumbbell className="w-6 h-6" />
+          </Link>
         </div>
       </div>
+
+      {/* Add Exercise Modal */}
+      {isAddExerciseOpen && (
+        <div className="fixed inset-0 z-50 flex items-end">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsAddExerciseOpen(false)}
+          />
+          
+          <div className="relative w-full max-w-md mx-auto bg-gray-900 rounded-t-3xl p-6 animate-slide-up">
+            <div className="w-12 h-1 bg-gray-700 rounded-full mx-auto mb-6" />
+            
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-white">Добавить упражнение</h2>
+              <button 
+                onClick={() => setIsAddExerciseOpen(false)}
+                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-gray-400 text-sm mb-3">Выберите из библиотеки</p>
+            
+            <div className="max-h-64 overflow-y-auto space-y-2 mb-6">
+              {availableExercises.map((exercise) => (
+                <button
+                  key={exercise}
+                  onClick={() => setSelectedExercise(exercise)}
+                  className={`w-full py-3 px-4 rounded-xl text-left transition-all ${
+                    selectedExercise === exercise
+                      ? "bg-orange-500 text-white"
+                      : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                  }`}
+                >
+                  {exercise}
+                </button>
+              ))}
+            </div>
+
+            <Link
+              href="/exercises"
+              className="block w-full py-3 px-4 bg-gray-800 text-orange-500 rounded-xl text-center font-medium hover:bg-gray-700 transition-colors mb-4"
+            >
+              Открыть библиотеку →
+            </Link>
+
+            <button
+              onClick={handleAddExercise}
+              disabled={!selectedExercise}
+              className="w-full bg-orange-500 text-white font-semibold py-4 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition-colors"
+            >
+              Добавить
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
