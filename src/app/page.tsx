@@ -54,17 +54,6 @@ interface WorkoutTemplate {
   muscleGroup: string;
 }
 
-// Шаблоны тренировок
-const workoutTemplates: WorkoutTemplate[] = [
-  { id: "t1", name: "Верх", muscleGroup: "Спина, грудь, плечи" },
-  { id: "t2", name: "Низ", muscleGroup: "Ноги, ягодицы" },
-  { id: "t3", name: "Грудь и трицепс", muscleGroup: "Грудь, трицепс" },
-  { id: "t4", name: "Спина и бицепс", muscleGroup: "Спина, бицепс" },
-  { id: "t5", name: "Плечи", muscleGroup: "Дельты" },
-  { id: "t6", name: "Руки", muscleGroup: "Бицепс, трицепс" },
-  { id: "t7", name: "Ноги", muscleGroup: "Квадрицепс, бицепс бедра" },
-];
-
 // Мок-данные
 const weekDays: DayStatus[] = [
   { shortName: "Пн", fullName: "Понедельник", date: 2, status: "rest" },
@@ -131,6 +120,23 @@ const initialWeekSections: WeekSection[] = [
   },
 ];
 
+// Ключ для шаблонов (тот же, что и на странице templates)
+const TEMPLATES_KEY = "workout_templates";
+
+// Загрузка шаблонов из localStorage
+function loadTemplatesFromStorage() {
+  if (typeof window === "undefined") return [];
+  const saved = localStorage.getItem(TEMPLATES_KEY);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 // Загрузка данных тренировки из localStorage
 function loadWorkoutFromStorage(workoutId: string): WorkoutDetail | null {
   if (typeof window === "undefined") return null;
@@ -168,6 +174,7 @@ export default function JournalPage() {
   
   // Состояние для модалки шаблонов
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
+  const [templates, setTemplates] = useState<any[]>([]);
   const [pastWorkouts, setPastWorkouts] = useState<Workout[]>([]);
 
   // Состояние для редактирования названия тренировки
@@ -177,6 +184,9 @@ export default function JournalPage() {
   // Загружаем актуальные данные при монтировании
   useEffect(() => {
     const loadWorkoutData = () => {
+      // Загружаем шаблоны
+      setTemplates(loadTemplatesFromStorage());
+      
       setWeekSections(prevSections => 
         prevSections.map(section => ({
           ...section,
@@ -516,21 +526,25 @@ export default function JournalPage() {
             <div className="mb-8">
               <h3 className="text-orange-500 text-sm font-medium mb-3 uppercase tracking-wider">Шаблоны</h3>
               <div className="space-y-2">
-                {workoutTemplates.map((template) => (
-                  <button
-                    key={template.id}
-                    onClick={() => handleCreateFromTemplate(template)}
-                    className="w-full py-4 px-4 bg-gray-800 rounded-xl text-left hover:bg-gray-700 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-white font-medium">{template.name}</p>
-                        <p className="text-gray-500 text-sm">{template.muscleGroup}</p>
+                {templates.length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">Нет шаблонов</p>
+                ) : (
+                  templates.map((template: any) => (
+                    <button
+                      key={template.id}
+                      onClick={() => handleCreateFromTemplate(template)}
+                      className="w-full py-4 px-4 bg-gray-800 rounded-xl text-left hover:bg-gray-700 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-white font-medium">{template.name}</p>
+                          <p className="text-gray-500 text-sm">{template.muscleGroup}</p>
+                        </div>
+                        <span className="text-orange-500">→</span>
                       </div>
-                      <span className="text-orange-500">→</span>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))
+                )}
               </div>
             </div>
 
