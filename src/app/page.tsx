@@ -376,15 +376,17 @@ export default function JournalPage() {
                         </button>
                       </div>
                     ) : (
-                      <h3 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleStartEditing(workout);
-                        }}
-                        className="text-white font-bold text-base mb-2 cursor-pointer hover:text-orange-400 transition-colors"
-                      >
-                        {workout.name}
+                      <h3 className="text-white font-bold text-base mb-2">
+                        <span
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleStartEditing(workout);
+                          }}
+                          className="cursor-pointer hover:text-orange-400 transition-colors inline-block"
+                        >
+                          {workout.name}
+                        </span>
                       </h3>
                     )}
                     
