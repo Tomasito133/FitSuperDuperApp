@@ -159,6 +159,21 @@ function formatSets(sets: Set[]) {
   return sets.map(s => `${s.weight} кг × ${s.reps}`).join(", ");
 }
 
+// Расчёт объёма упражнения (вес × повторения)
+function calculateExerciseVolume(sets: Set[]): number {
+  return sets.reduce((total, set) => total + (set.weight * set.reps), 0);
+}
+
+// Расчёт общего объёма тренировки
+function calculateWorkoutVolume(exercises: ExerciseInWorkout[]): number {
+  return exercises.reduce((total, ex) => total + calculateExerciseVolume(ex.sets), 0);
+}
+
+// Форматирование объёма для отображения
+function formatVolume(volume: number): string {
+  return volume.toLocaleString("ru-RU");
+}
+
 // Ключ для localStorage тренировки
 function getWorkoutKey(workoutId: string): string {
   return `workout_${workoutId}`;
@@ -228,9 +243,11 @@ export default function WorkoutDetailPage() {
     return workoutData;
   });
 
-  // Сохраняем при изменении workout
+  // Сохраняем при изменении workout + обновляем объём
   useEffect(() => {
-    saveToStorage(workoutId, workout);
+    const volume = calculateWorkoutVolume(workout.exercises);
+    const workoutWithVolume = { ...workout, volume: formatVolume(volume) };
+    saveToStorage(workoutId, workoutWithVolume);
   }, [workout, workoutId]);
 
   // Обновляем данные при возврате на страницу
@@ -324,7 +341,7 @@ export default function WorkoutDetailPage() {
       <div className="px-5 py-4 border-b border-gray-800">
         <div className="text-center">
           <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">Объём</p>
-          <p className="text-white text-2xl font-bold">{workout.volume} кг</p>
+          <p className="text-white text-2xl font-bold">{formatVolume(calculateWorkoutVolume(workout.exercises))} кг</p>
         </div>
       </div>
 
