@@ -347,13 +347,13 @@ export default function JournalPage() {
               key={day.shortName}
               onClick={() => setSelectedDay(day.shortName)}
               className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all ${
-                day.status === "today"
+                selectedDay === day.shortName && day.status === "today"
                   ? "ring-2 ring-orange-500/50 bg-gray-800/50"
                   : ""
               }`}
             >
               <span className={`text-xs font-medium ${
-                day.status === "today"
+                selectedDay === day.shortName
                   ? "text-orange-500"
                   : "text-gray-500"
               }`}>
@@ -361,11 +361,9 @@ export default function JournalPage() {
               </span>
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                  day.status === "today"
+                  selectedDay === day.shortName
                     ? "bg-orange-500 text-white"
-                    : selectedDay === day.shortName
-                      ? "bg-orange-500 text-white"
-                      : getDayCircleStyle(day)
+                    : getDayCircleStyle(day)
                 }`}
               >
                 {getDayIndicator(day)}
