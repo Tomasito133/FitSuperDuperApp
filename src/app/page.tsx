@@ -1,10 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Plus, Trophy, Dumbbell, BarChart3, Settings, MoreHorizontal, Zap, Check, BookOpen } from "lucide-react";
 
 // Типы данных
+interface Set {
+  weight: number;
+  reps: number;
+}
+
+interface ExerciseInWorkout {
+  id: string;
+  name: string;
+  sets: Set[];
+}
+
+interface WorkoutDetail {
+  id: string;
+  name: string;
+  duration: string;
+  volume: string;
+  exercises: ExerciseInWorkout[];
+}
+
 interface Workout {
   id: string;
   dayName: string;
@@ -45,7 +64,8 @@ const currentWorkout = {
   name: "Верх",
 };
 
-const weekSections: WeekSection[] = [
+// Мок-данные тренировок
+const initialWeekSections: WeekSection[] = [
   {
     title: "На этой неделе",
     trophyCount: 9,
@@ -98,9 +118,70 @@ const weekSections: WeekSection[] = [
   },
 ];
 
+// Загрузка данных тренировки из localStorage
+function loadWorkoutFromStorage(workoutId: string): WorkoutDetail | null {
+  if (typeof window === "undefined") return null;
+  const key = `workout_${workoutId}`;
+  const saved = localStorage.getItem(key);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+// Расчёт объёма упражнения
+function calculateExerciseVolume(sets: Set[]): number {
+  return sets.reduce((total, set) => total + (set.weight * set.reps), 0);
+}
+
+// Расчёт общего объёма тренировки
+function calculateWorkoutVolume(exercises: ExerciseInWorkout[]): number {
+  return exercises.reduce((total, ex) => total + calculateExerciseVolume(ex.sets), 0);
+}
+
+// Форматирование объёма
+function formatVolume(volume: number): string {
+  return volume.toLocaleString("ru-RU");
+}
+
 export default function JournalPage() {
   const [activeTab, setActiveTab] = useState("journal");
   const [selectedDay, setSelectedDay] = useState("Сб");
+  const [weekSections, setWeekSections] = useState<WeekSection[]>(initialWeekSections);
+
+  // Загружаем актуальные данные при монтировании
+  useEffect(() => {
+    const loadWorkoutData = () => {
+      setWeekSections(prevSections => 
+        prevSections.map(section => ({
+          ...section,
+          workouts: section.workouts.map(workout => {
+            const savedWorkout = loadWorkoutFromStorage(workout.id);
+            if (savedWorkout) {
+              const volume = calculateWorkoutVolume(savedWorkout.exercises);
+              return {
+                ...workout,
+                name: savedWorkout.name,
+                volume: formatVolume(volume) + " кг",
+              };
+            }
+            return workout;
+          })
+        }))
+      );
+    };
+
+    loadWorkoutData();
+
+    // Обновляем данные при возврате на страницу
+    const handleFocus = () => loadWorkoutData();
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, []);
 
   const getDayCircleStyle = (day: DayStatus) => {
     switch (day.status) {
