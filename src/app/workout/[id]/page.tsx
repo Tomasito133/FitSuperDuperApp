@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { 
@@ -159,9 +159,47 @@ function formatSets(sets: Set[]) {
   return sets.map(s => `${s.weight} кг × ${s.reps}`).join(", ");
 }
 
+// Ключ для localStorage
+function getStorageKey(workoutId: string): string {
+  return `workout_${workoutId}`;
+}
+
+// Загрузка из localStorage
+function loadFromStorage(workoutId: string): WorkoutDetail | null {
+  if (typeof window === "undefined") return null;
+  const key = getStorageKey(workoutId);
+  const saved = localStorage.getItem(key);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+// Сохранение в localStorage
+function saveToStorage(workoutId: string, workout: WorkoutDetail): void {
+  if (typeof window === "undefined") return;
+  const key = getStorageKey(workoutId);
+  localStorage.setItem(key, JSON.stringify(workout));
+}
+
 export default function WorkoutDetailPage() {
   const router = useRouter();
-  const [workout, setWorkout] = useState(mockWorkout);
+  const params = useParams();
+  const workoutId = (params.id as string) || "1";
+  
+  const [workout, setWorkout] = useState<WorkoutDetail>(() => {
+    const saved = loadFromStorage(workoutId);
+    return saved || { ...mockWorkout, id: workoutId };
+  });
+
+  // Сохраняем при изменении workout
+  useEffect(() => {
+    saveToStorage(workoutId, workout);
+  }, [workout, workoutId]);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [elapsedTime, setElapsedTime] = useState("1:18:32");
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);

@@ -132,6 +132,33 @@ function getExerciseById(id: string): Exercise {
   );
 }
 
+// Ключ для localStorage
+function getStorageKey(workoutId: string, exerciseId: string): string {
+  return `workout_${workoutId}_exercise_${exerciseId}`;
+}
+
+// Загрузка из localStorage
+function loadFromStorage(workoutId: string, exerciseId: string): Exercise | null {
+  if (typeof window === "undefined") return null;
+  const key = getStorageKey(workoutId, exerciseId);
+  const saved = localStorage.getItem(key);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+// Сохранение в localStorage
+function saveToStorage(workoutId: string, exerciseId: string, exercise: Exercise): void {
+  if (typeof window === "undefined") return;
+  const key = getStorageKey(workoutId, exerciseId);
+  localStorage.setItem(key, JSON.stringify(exercise));
+}
+
 export default function ExerciseSetsPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -146,11 +173,29 @@ export default function ExerciseSetsPage() {
   const [isSetActive, setIsSetActive] = useState(false);
   const [completedSets, setCompletedSets] = useState<number[]>([]);
   const [editingTimer, setEditingTimer] = useState<number | null>(null);
-  const [exercise, setExercise] = useState<Exercise>(() => getExerciseById(exerciseId));
+  const [exercise, setExercise] = useState<Exercise>(() => {
+    // Пробуем загрузить из localStorage
+    const saved = loadFromStorage(workoutId, exerciseId);
+    if (saved) {
+      return saved;
+    }
+    // Если нет в localStorage, берём из базы
+    return getExerciseById(exerciseId);
+  });
+
+  // Сохраняем при изменении exercise
+  useEffect(() => {
+    saveToStorage(workoutId, exerciseId, exercise);
+  }, [exercise, workoutId, exerciseId]);
 
   // Обновляем упражнение при изменении ID
   useEffect(() => {
-    setExercise(getExerciseById(exerciseId));
+    const saved = loadFromStorage(workoutId, exerciseId);
+    if (saved) {
+      setExercise(saved);
+    } else {
+      setExercise(getExerciseById(exerciseId));
+    }
     // Сбрасываем состояние для нового упражнения
     setIsActive(false);
     setWorkoutTime(0);
@@ -159,7 +204,7 @@ export default function ExerciseSetsPage() {
     setCurrentSetIndex(0);
     setIsSetActive(false);
     setCompletedSets([]);
-  }, [exerciseId]);
+  }, [exerciseId, workoutId]);
 
   const currentSet = exercise.sets[currentSetIndex];
 
