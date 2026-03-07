@@ -8,9 +8,7 @@ import {
   Plus, 
   Play, 
   Pause,
-  Check,
   Clock,
-  Dumbbell,
   Search,
   Trash2
 } from "lucide-react";
@@ -237,12 +235,7 @@ export default function ActiveWorkoutPage() {
             Завершить
           </Link>
 
-          <Link
-            href="/workout/active"
-            className="w-14 h-14 bg-gray-800 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
-          >
-            <Dumbbell className="w-6 h-6" />
-          </Link>
+          <div className="w-14" />
         </div>
       </div>
 
