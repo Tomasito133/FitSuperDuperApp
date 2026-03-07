@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, Trophy, Dumbbell, BarChart3, Settings, MoreHorizontal, Zap, Check, ChevronRight } from "lucide-react";
+import { Plus, Trophy, Dumbbell, BarChart3, Settings, MoreHorizontal, Zap, Check, BookOpen } from "lucide-react";
 
 // Типы данных
 interface Workout {
@@ -232,50 +232,25 @@ export default function JournalPage() {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-gray-900 border-t border-gray-800 px-2 pt-2 pb-6">
         <div className="flex justify-around items-center">
-          <button
-            onClick={() => setActiveTab("journal")}
-            className={`flex flex-col items-center gap-1 py-2 px-3 ${
-              activeTab === "journal" ? "text-orange-500" : "text-gray-500"
-            }`}
-          >
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
-              <rect x="9" y="3" width="6" height="4" rx="2" />
-              <path d="M9 14h6" />
-              <path d="M9 10h6" />
-            </svg>
+          <div className="flex flex-col items-center gap-1 py-2 px-3 text-orange-500">
+            <BookOpen className="w-6 h-6" />
             <span className="text-xs font-medium">Дневник</span>
-          </button>
+          </div>
 
-          <button
-            onClick={() => setActiveTab("results")}
-            className={`flex flex-col items-center gap-1 py-2 px-3 ${
-              activeTab === "results" ? "text-orange-500" : "text-gray-500"
-            }`}
-          >
+          <Link href="/results" className="flex flex-col items-center gap-1 py-2 px-3 text-gray-500 hover:text-orange-500 transition-colors">
             <BarChart3 className="w-6 h-6" />
             <span className="text-xs font-medium">Результаты</span>
-          </button>
+          </Link>
 
-          <button
-            onClick={() => setActiveTab("exercises")}
-            className={`flex flex-col items-center gap-1 py-2 px-3 ${
-              activeTab === "exercises" ? "text-orange-500" : "text-gray-500"
-            }`}
-          >
+          <Link href="/exercises" className="flex flex-col items-center gap-1 py-2 px-3 text-gray-500 hover:text-orange-500 transition-colors">
             <Dumbbell className="w-6 h-6" />
             <span className="text-xs font-medium">Упражнения</span>
-          </button>
+          </Link>
 
-          <button
-            onClick={() => setActiveTab("settings")}
-            className={`flex flex-col items-center gap-1 py-2 px-3 ${
-              activeTab === "settings" ? "text-orange-500" : "text-gray-500"
-            }`}
-          >
+          <Link href="/settings" className="flex flex-col items-center gap-1 py-2 px-3 text-gray-500 hover:text-orange-500 transition-colors">
             <Settings className="w-6 h-6" />
             <span className="text-xs font-medium">Настройки</span>
-          </button>
+          </Link>
         </div>
       </nav>
     </div>
