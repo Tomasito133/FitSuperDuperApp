@@ -30,7 +30,6 @@ interface Workout {
   name: string;
   duration: string;
   volume: string;
-  calories: number;
   muscleGroup: string;
 }
 
@@ -77,7 +76,6 @@ const initialWeekSections: WeekSection[] = [
         name: "Тяни",
         duration: "1 ч 18 мин",
         volume: "13 836 кг",
-        calories: 372,
         muscleGroup: "Тяга",
       },
       {
@@ -86,7 +84,6 @@ const initialWeekSections: WeekSection[] = [
         name: "Низ",
         duration: "45 мин",
         volume: "9 732 кг",
-        calories: 204,
         muscleGroup: "Ноги",
       },
     ],
@@ -102,7 +99,6 @@ const initialWeekSections: WeekSection[] = [
         name: "Грудь и трицепс",
         duration: "1 ч 5 мин",
         volume: "11 240 кг",
-        calories: 320,
         muscleGroup: "Грудь",
       },
       {
@@ -111,7 +107,6 @@ const initialWeekSections: WeekSection[] = [
         name: "Спина и бицепс",
         duration: "55 мин",
         volume: "10 150 кг",
-        calories: 280,
         muscleGroup: "Спина",
       },
     ],
@@ -391,7 +386,7 @@ export default function JournalPage() {
                     )}
                     
                     <p className="text-gray-400 text-sm">
-                      {workout.duration} · {workout.volume} · {workout.calories} ккал
+                      {workout.duration} · {workout.volume}
                     </p>
                   </div>
                 </Link>
