@@ -359,9 +359,11 @@ export default function JournalPage() {
               </span>
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                  selectedDay === day.shortName
+                  day.status === "today"
                     ? "bg-orange-500 text-white ring-2 ring-orange-500/50"
-                    : getDayCircleStyle(day)
+                    : selectedDay === day.shortName
+                      ? "bg-orange-500 text-white"
+                      : getDayCircleStyle(day)
                 }`}
               >
                 {getDayIndicator(day)}
