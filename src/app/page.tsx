@@ -153,6 +153,10 @@ export default function JournalPage() {
   const [selectedDay, setSelectedDay] = useState("Сб");
   const [weekSections, setWeekSections] = useState<WeekSection[]>(initialWeekSections);
 
+  // Состояние для редактирования названия тренировки
+  const [editingWorkoutId, setEditingWorkoutId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
+
   // Загружаем актуальные данные при монтировании
   useEffect(() => {
     const loadWorkoutData = () => {
@@ -182,6 +186,40 @@ export default function JournalPage() {
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
   }, []);
+
+  // Начать редактирование названия
+  const handleStartEditing = (workout: Workout) => {
+    setEditingWorkoutId(workout.id);
+    setEditingName(workout.name);
+  };
+
+  // Сохранить название
+  const handleSaveName = (workoutId: string) => {
+    // Обновляем в localStorage
+    const savedWorkout = loadWorkoutFromStorage(workoutId);
+    if (savedWorkout) {
+      const updatedWorkout = { ...savedWorkout, name: editingName };
+      localStorage.setItem(`workout_${workoutId}`, JSON.stringify(updatedWorkout));
+    }
+    
+    // Обновляем в состоянии
+    setWeekSections(prevSections =>
+      prevSections.map(section => ({
+        ...section,
+        workouts: section.workouts.map(workout =>
+          workout.id === workoutId ? { ...workout, name: editingName } : workout
+        )
+      }))
+    );
+    
+    setEditingWorkoutId(null);
+  };
+
+  // Отменить редактирование
+  const handleCancelEditing = () => {
+    setEditingWorkoutId(null);
+    setEditingName("");
+  };
 
   const getDayCircleStyle = (day: DayStatus) => {
     switch (day.status) {
@@ -299,7 +337,57 @@ export default function JournalPage() {
                   <div className="w-1.5 h-12 bg-orange-500 rounded-full shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <p className="text-gray-500 text-sm mb-0.5">{workout.dayName}</p>
-                    <h3 className="text-white font-bold text-base mb-2">{workout.name}</h3>
+                    
+                    {/* Название тренировки с возможностью редактирования */}
+                    {editingWorkoutId === workout.id ? (
+                      <div className="flex items-center gap-2 mb-2">
+                        <input
+                          type="text"
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          onBlur={() => handleSaveName(workout.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSaveName(workout.id);
+                            if (e.key === "Escape") handleCancelEditing();
+                          }}
+                          autoFocus
+                          className="flex-1 bg-gray-800 text-white text-base font-bold px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          onClick={(e) => e.preventDefault()}
+                        />
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleSaveName(workout.id);
+                          }}
+                          className="p-2 text-green-500 hover:bg-green-500/10 rounded-lg"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleCancelEditing();
+                          }}
+                          className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <h3 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleStartEditing(workout);
+                        }}
+                        className="text-white font-bold text-base mb-2 cursor-pointer hover:text-orange-400 transition-colors"
+                      >
+                        {workout.name}
+                      </h3>
+                    )}
+                    
                     <p className="text-gray-400 text-sm">
                       {workout.duration} · {workout.volume} · {workout.calories} ккал
                     </p>
