@@ -124,19 +124,31 @@ const mockWorkout: WorkoutDetail = {
   ],
 };
 
-// Доступные упражнения из библиотеки
+// Доступные упражнения из библиотеки с мышечными группами
 const availableExercises = [
-  "Подтягивания",
-  "Тяга верхнего блока",
-  "Тяга штанги в наклоне",
-  "Жим штанги лёжа",
-  "Жим гантелей",
-  "Махи с гантелями",
-  "Сгибания на бицепс",
-  "Разгибания на трицепс",
-  "Приседания",
-  "Выпады",
-  "Становая тяга",
+  { name: "Подтягивания", muscleGroup: "Спина" },
+  { name: "Тяга верхнего блока", muscleGroup: "Спина" },
+  { name: "Тяга штанги в наклоне", muscleGroup: "Спина" },
+  { name: "Тяга одной рукой в наклоне", muscleGroup: "Спина" },
+  { name: "Жим штанги лёжа", muscleGroup: "Грудь" },
+  { name: "Жим гантелей лёжа", muscleGroup: "Грудь" },
+  { name: "Сведение рук в кроссовере", muscleGroup: "Грудь" },
+  { name: "Махи с гантелями стоя", muscleGroup: "Средние дельты" },
+  { name: "Махи в кроссовере", muscleGroup: "Средние дельты" },
+  { name: "Подъём гантелей перед собой", muscleGroup: "Передние дельты" },
+  { name: "Махи с гантелями лежа", muscleGroup: "Задние дельты" },
+  { name: "Обратная бабочка", muscleGroup: "Задние дельты" },
+  { name: "Сгибания на бицепс", muscleGroup: "Бицепс" },
+  { name: "Молотки", muscleGroup: "Бицепс" },
+  { name: "Разгибания на трицепс", muscleGroup: "Трицепс" },
+  { name: "Французский жим", muscleGroup: "Трицепс" },
+  { name: "Приседания", muscleGroup: "Квадрицепс" },
+  { name: "Выпады", muscleGroup: "Квадрицепс" },
+  { name: "Становая тяга", muscleGroup: "Спина" },
+  { name: "Подъём на носки", muscleGroup: "Икры" },
+  { name: "Гиперэкстензия", muscleGroup: "Спина" },
+  { name: "Скручивания", muscleGroup: "Пресс" },
+  { name: "Планка", muscleGroup: "Пресс" },
 ];
 
 function formatSets(sets: Set[]) {
@@ -156,9 +168,13 @@ export default function WorkoutDetailPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredExercises = searchQuery
-    ? availableExercises.filter(ex => 
-        ex.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? availableExercises.filter(ex => {
+        const query = searchQuery.toLowerCase();
+        return (
+          ex.name.toLowerCase().includes(query) ||
+          ex.muscleGroup.toLowerCase().includes(query)
+        );
+      })
     : availableExercises;
 
   const handleAddExercise = () => {
@@ -291,15 +307,22 @@ export default function WorkoutDetailPage() {
             <div className="max-h-64 overflow-y-auto space-y-2 mb-6">
               {filteredExercises.map((exercise) => (
                 <button
-                  key={exercise}
-                  onClick={() => setSelectedExercise(exercise)}
-                  className={`w-full py-3 px-4 rounded-xl text-left transition-all ${
-                    selectedExercise === exercise
+                  key={exercise.name}
+                  onClick={() => setSelectedExercise(exercise.name)}
+                  className={`w-full py-3 px-4 rounded-xl text-left transition-all flex items-center justify-between ${
+                    selectedExercise === exercise.name
                       ? "bg-orange-500 text-white"
                       : "bg-gray-800 text-gray-300 hover:bg-gray-700"
                   }`}
                 >
-                  {exercise}
+                  <span>{exercise.name}</span>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    selectedExercise === exercise.name
+                      ? "bg-white/20 text-white"
+                      : "bg-orange-500/20 text-orange-400"
+                  }`}>
+                    {exercise.muscleGroup}
+                  </span>
                 </button>
               ))}
               {filteredExercises.length === 0 && (
