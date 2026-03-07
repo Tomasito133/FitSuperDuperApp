@@ -159,15 +159,20 @@ function formatSets(sets: Set[]) {
   return sets.map(s => `${s.weight} кг × ${s.reps}`).join(", ");
 }
 
-// Ключ для localStorage
-function getStorageKey(workoutId: string): string {
+// Ключ для localStorage тренировки
+function getWorkoutKey(workoutId: string): string {
   return `workout_${workoutId}`;
+}
+
+// Ключ для localStorage упражнения
+function getExerciseKey(workoutId: string, exerciseId: string): string {
+  return `workout_${workoutId}_exercise_${exerciseId}`;
 }
 
 // Загрузка из localStorage
 function loadFromStorage(workoutId: string): WorkoutDetail | null {
   if (typeof window === "undefined") return null;
-  const key = getStorageKey(workoutId);
+  const key = getWorkoutKey(workoutId);
   const saved = localStorage.getItem(key);
   if (saved) {
     try {
@@ -179,10 +184,26 @@ function loadFromStorage(workoutId: string): WorkoutDetail | null {
   return null;
 }
 
+// Загрузка актуальных данных подходов из localStorage упражнения
+function loadExerciseSetsFromStorage(workoutId: string, exerciseId: string): Set[] | null {
+  if (typeof window === "undefined") return null;
+  const key = getExerciseKey(workoutId, exerciseId);
+  const saved = localStorage.getItem(key);
+  if (saved) {
+    try {
+      const exercise = JSON.parse(saved);
+      return exercise.sets || null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 // Сохранение в localStorage
 function saveToStorage(workoutId: string, workout: WorkoutDetail): void {
   if (typeof window === "undefined") return;
-  const key = getStorageKey(workoutId);
+  const key = getWorkoutKey(workoutId);
   localStorage.setItem(key, JSON.stringify(workout));
 }
 
@@ -193,13 +214,43 @@ export default function WorkoutDetailPage() {
   
   const [workout, setWorkout] = useState<WorkoutDetail>(() => {
     const saved = loadFromStorage(workoutId);
-    return saved || { ...mockWorkout, id: workoutId };
+    let workoutData = saved || { ...mockWorkout, id: workoutId };
+    
+    // Подтягиваем актуальные данные подходов из localStorage упражнений
+    workoutData.exercises = workoutData.exercises.map(ex => {
+      const savedSets = loadExerciseSetsFromStorage(workoutId, ex.id);
+      if (savedSets) {
+        return { ...ex, sets: savedSets };
+      }
+      return ex;
+    });
+    
+    return workoutData;
   });
 
   // Сохраняем при изменении workout
   useEffect(() => {
     saveToStorage(workoutId, workout);
   }, [workout, workoutId]);
+
+  // Обновляем данные при возврате на страницу
+  useEffect(() => {
+    const handleFocus = () => {
+      setWorkout(prev => {
+        const updatedExercises = prev.exercises.map(ex => {
+          const savedSets = loadExerciseSetsFromStorage(workoutId, ex.id);
+          if (savedSets) {
+            return { ...ex, sets: savedSets };
+          }
+          return ex;
+        });
+        return { ...prev, exercises: updatedExercises };
+      });
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [workoutId]);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [elapsedTime, setElapsedTime] = useState("1:18:32");
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
