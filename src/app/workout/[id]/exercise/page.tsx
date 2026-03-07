@@ -1,15 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Play,
   Pause,
   Check,
   ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
   Plus,
   Clock,
   Trash2,
@@ -29,20 +27,112 @@ interface Exercise {
   sets: Set[];
 }
 
-// Мок-данные упражнения
-const mockExercise: Exercise = {
-  id: "e2",
-  name: "Тяга верхнего блока узким хватом",
-  muscleGroup: "ШИРОЧАЙШИЕ",
-  sets: [
-    { id: 1, weight: 52, reps: 12, restTime: 120 },
-    { id: 2, weight: 52, reps: 10, restTime: 120 },
-    { id: 3, weight: 52, reps: 10, restTime: 120 },
-  ],
+// База данных упражнений с подходами
+const exercisesDatabase: Record<string, Exercise> = {
+  e1: {
+    id: "e1",
+    name: "Подтягивания с резиной",
+    muscleGroup: "Спина",
+    sets: [
+      { id: 1, weight: 0, reps: 12, restTime: 120 },
+      { id: 2, weight: 0, reps: 12, restTime: 120 },
+      { id: 3, weight: 0, reps: 12, restTime: 120 },
+    ],
+  },
+  e2: {
+    id: "e2",
+    name: "Тяга верхнего блока узким хватом",
+    muscleGroup: "ШИРОЧАЙШИЕ",
+    sets: [
+      { id: 1, weight: 52, reps: 12, restTime: 120 },
+      { id: 2, weight: 52, reps: 10, restTime: 120 },
+      { id: 3, weight: 52, reps: 10, restTime: 120 },
+    ],
+  },
+  e3: {
+    id: "e3",
+    name: "Сведения в Бабочке",
+    muscleGroup: "Грудь",
+    sets: [
+      { id: 1, weight: 45, reps: 12, restTime: 120 },
+      { id: 2, weight: 45, reps: 10, restTime: 120 },
+      { id: 3, weight: 45, reps: 10, restTime: 120 },
+    ],
+  },
+  e4: {
+    id: "e4",
+    name: "Подъём гантелей перед собой сидя параллельным хватом",
+    muscleGroup: "Передние дельты",
+    sets: [
+      { id: 1, weight: 15, reps: 15, restTime: 90 },
+      { id: 2, weight: 15, reps: 15, restTime: 90 },
+    ],
+  },
+  e5: {
+    id: "e5",
+    name: "Махи с гантелями стоя",
+    muscleGroup: "Средние дельты",
+    sets: [
+      { id: 1, weight: 32, reps: 17, restTime: 90 },
+      { id: 2, weight: 32, reps: 17, restTime: 90 },
+      { id: 3, weight: 32, reps: 17, restTime: 90 },
+    ],
+  },
+  e6: {
+    id: "e6",
+    name: "Махи с гантелями лежа на наклонной скамье",
+    muscleGroup: "Задние дельты",
+    sets: [
+      { id: 1, weight: 18, reps: 15, restTime: 90 },
+      { id: 2, weight: 18, reps: 12, restTime: 90 },
+      { id: 3, weight: 18, reps: 12, restTime: 90 },
+    ],
+  },
+  e7: {
+    id: "e7",
+    name: "Тяга косички к лицу сидя с нижнего блока",
+    muscleGroup: "Задние дельты",
+    sets: [
+      { id: 1, weight: 15, reps: 20, restTime: 90 },
+      { id: 2, weight: 15, reps: 20, restTime: 90 },
+      { id: 3, weight: 15, reps: 20, restTime: 90 },
+    ],
+  },
+  e8: {
+    id: "e8",
+    name: "Паучьи сгибания с EZ-штангой",
+    muscleGroup: "Бицепс",
+    sets: [
+      { id: 1, weight: 20, reps: 16, restTime: 90 },
+      { id: 2, weight: 20, reps: 12, restTime: 90 },
+      { id: 3, weight: 20, reps: 10, restTime: 90 },
+    ],
+  },
+  e9: {
+    id: "e9",
+    name: "Французский жим гантелей по 1 руке на наклонной лавке",
+    muscleGroup: "Трицепс",
+    sets: [
+      { id: 1, weight: 0, reps: 16, restTime: 90 },
+      { id: 2, weight: 0, reps: 12, restTime: 90 },
+      { id: 3, weight: 0, reps: 10, restTime: 90 },
+    ],
+  },
 };
 
+// Функция для получения упражнения по ID
+function getExerciseById(id: string): Exercise {
+  return (
+    exercisesDatabase[id] || {
+      id,
+      name: "Упражнение",
+      muscleGroup: "",
+      sets: [{ id: 1, weight: 0, reps: 0, restTime: 120 }],
+    }
+  );
+}
+
 export default function ExerciseSetsPage() {
-  const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const workoutId = params.id as string;
@@ -56,7 +146,20 @@ export default function ExerciseSetsPage() {
   const [isSetActive, setIsSetActive] = useState(false);
   const [completedSets, setCompletedSets] = useState<number[]>([]);
   const [editingTimer, setEditingTimer] = useState<number | null>(null);
-  const [exercise, setExercise] = useState<Exercise>(mockExercise);
+  const [exercise, setExercise] = useState<Exercise>(() => getExerciseById(exerciseId));
+
+  // Обновляем упражнение при изменении ID
+  useEffect(() => {
+    setExercise(getExerciseById(exerciseId));
+    // Сбрасываем состояние для нового упражнения
+    setIsActive(false);
+    setWorkoutTime(0);
+    setRestTime(0);
+    setIsResting(false);
+    setCurrentSetIndex(0);
+    setIsSetActive(false);
+    setCompletedSets([]);
+  }, [exerciseId]);
 
   const currentSet = exercise.sets[currentSetIndex];
 
