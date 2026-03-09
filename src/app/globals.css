@@ -133,8 +133,8 @@
     overflow-x: hidden;
     /* Prevent pull-to-refresh on mobile */
     overscroll-behavior-y: none;
-    /* Prevent zoom */
-    touch-action: pan-y;
+    /* Allow vertical scroll */
+    overflow-y: auto;
   }
   
   html {
@@ -144,6 +144,9 @@
     text-size-adjust: 100%;
     /* Smooth scrolling */
     scroll-behavior: smooth;
+    /* Allow vertical scroll */
+    overflow-y: auto;
+    overflow-x: hidden;
   }
   
   /* Allow text selection in inputs */
@@ -151,16 +154,6 @@
     -webkit-user-select: auto;
     user-select: auto;
     touch-action: auto;
-  }
-}
-
-/* Prevent bounce effect on iOS */
-@supports (-webkit-touch-callout: none) {
-  body {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
   }
 }
 
