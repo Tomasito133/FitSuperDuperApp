@@ -252,8 +252,8 @@ export default function JournalPage() {
     const isRightSwipe = distance < -minSwipeDistance;
     
     if (isLeftSwipe) {
-      // Свайп влево — будущие недели (но не дальше текущей)
-      setWeekOffset(prev => Math.min(prev + 1, 0));
+      // Свайп влево — будущие недели
+      setWeekOffset(prev => prev + 1);
     } else if (isRightSwipe) {
       // Свайп вправо — прошлые недели
       setWeekOffset(prev => prev - 1);
@@ -262,7 +262,7 @@ export default function JournalPage() {
   
   // Навигация по неделям
   const goToPreviousWeek = () => setWeekOffset(prev => prev - 1);
-  const goToNextWeek = () => setWeekOffset(prev => Math.min(prev + 1, 0));
+  const goToNextWeek = () => setWeekOffset(prev => prev + 1);
   const goToCurrentWeek = () => {
     setWeekOffset(0);
     setSelectedDay(getTodayShortName());
@@ -450,13 +450,17 @@ export default function JournalPage() {
             {formatWeekRange(weekOffset)}
           </button>
           
-          {/* Days Strip with Swipe - Ultra compact */}
+          {/* Days Strip with Swipe - Ultra compact with animation */}
           <div 
-            className="flex items-center select-none"
+            className="flex items-center select-none overflow-hidden"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
           >
+            <div 
+              className="flex transition-transform duration-300 ease-out"
+              style={{ transform: `translateX(${-weekOffset * 10}px)` }}
+            >
             {weekDays.map((day) => (
               <button
                 key={day.shortName}
@@ -485,6 +489,7 @@ export default function JournalPage() {
                 </div>
               </button>
             ))}
+            </div>
           </div>
           
         </div>
