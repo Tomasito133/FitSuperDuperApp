@@ -436,14 +436,14 @@ export default function JournalPage() {
         {/* Title */}
         <h1 className="text-3xl font-bold text-white mb-6">Дневник</h1>
 
-        {/* Calendar Strip with Navigation - Fixed width centered */}
-        <div className="mb-4 max-w-[400px] mx-auto relative">
-          {/* Week Navigation Header - Fixed arrows on sides */}
-          <div className="flex items-center justify-center mb-4 relative">
+        {/* Calendar Strip with Navigation - Compact centered */}
+        <div className="mb-4 flex flex-col items-center">
+          {/* Week Navigation Header with arrows inline */}
+          <div className="flex items-center justify-center gap-2 mb-4">
             {/* Left arrow */}
             <button 
               onClick={goToPreviousWeek}
-              className="absolute -left-10 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-colors"
+              className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-colors"
               aria-label="Прошлая неделя"
             >
               <ChevronLeft className="w-6 h-6" />
@@ -452,7 +452,7 @@ export default function JournalPage() {
             {/* Center text */}
             <button 
               onClick={goToCurrentWeek}
-              className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
+              className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-colors min-w-[120px] text-center ${
                 weekOffset === 0 
                   ? "text-orange-500" 
                   : "text-gray-400 hover:text-white hover:bg-gray-800"
@@ -465,7 +465,7 @@ export default function JournalPage() {
             <button 
               onClick={goToNextWeek}
               disabled={weekOffset === 0}
-              className={`absolute -right-10 w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${
+              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${
                 weekOffset === 0 
                   ? "text-gray-700 cursor-not-allowed" 
                   : "text-gray-400 hover:text-white hover:bg-gray-800"
@@ -476,9 +476,9 @@ export default function JournalPage() {
             </button>
           </div>
           
-          {/* Days Strip with Swipe */}
+          {/* Days Strip with Swipe - Compact */}
           <div 
-            className="flex items-center select-none justify-between px-2"
+            className="flex items-center select-none gap-1"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
