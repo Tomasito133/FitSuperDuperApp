@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Trophy, Dumbbell, BarChart3, Settings, MoreHorizontal, Zap, Check, BookOpen } from "lucide-react";
+import { Plus, Trophy, Dumbbell, BarChart3, Settings, MoreHorizontal, Zap, Check, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 
 // Типы данных
 interface Set {
@@ -54,16 +54,64 @@ interface WorkoutTemplate {
   muscleGroup: string;
 }
 
-// Мок-данные
-const weekDays: DayStatus[] = [
-  { shortName: "Пн", fullName: "Понедельник", date: 2, status: "rest" },
-  { shortName: "Вт", fullName: "Вторник", date: 3, status: "completed" },
-  { shortName: "Ср", fullName: "Среда", date: 4, status: "rest" },
-  { shortName: "Чт", fullName: "Четверг", date: 5, status: "completed" },
-  { shortName: "Пт", fullName: "Пятница", date: 6, status: "planned" },
-  { shortName: "Сб", fullName: "Суббота", date: 7, status: "today" },
-  { shortName: "Вс", fullName: "Воскресенье", date: 8, status: "rest" },
-];
+// Динамическая генерация дней недели с поддержкой смещения
+function getWeekDays(weekOffset: number = 0): DayStatus[] {
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0 = вс, 1 = пн, ..., 6 = сб
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + mondayOffset + weekOffset * 7);
+  
+  const days: DayStatus[] = [];
+  const dayNames = [
+    { short: "Пн", full: "Понедельник" },
+    { short: "Вт", full: "Вторник" },
+    { short: "Ср", full: "Среда" },
+    { short: "Чт", full: "Четверг" },
+    { short: "Пт", full: "Пятница" },
+    { short: "Сб", full: "Суббота" },
+    { short: "Вс", full: "Воскресенье" },
+  ];
+  
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + i);
+    const isToday = date.toDateString() === today.toDateString();
+    
+    days.push({
+      shortName: dayNames[i].short,
+      fullName: dayNames[i].full,
+      date: date.getDate(),
+      status: isToday ? "today" : "rest",
+    });
+  }
+  
+  return days;
+}
+
+// Форматирование диапазона недели для заголовка
+function formatWeekRange(weekOffset: number): string {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + mondayOffset + weekOffset * 7);
+  
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  
+  const months = ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
+  
+  const mondayStr = `${monday.getDate()} ${months[monday.getMonth()]}`;
+  const sundayStr = `${sunday.getDate()} ${months[sunday.getMonth()]}`;
+  
+  if (weekOffset === 0) return "На этой неделе";
+  if (weekOffset === -1) return "На прошлой неделе";
+  if (weekOffset === 1) return "На следующей неделе";
+  return `${mondayStr} — ${sundayStr}`;
+}
 
 const currentWorkout = {
   label: "Сейчас",
@@ -167,10 +215,58 @@ function formatVolume(volume: number): string {
   return volume.toLocaleString("ru-RU");
 }
 
+// Получить сегодняшний день недели (Пн-Вс)
+function getTodayShortName(): string {
+  const dayNames = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
+  return dayNames[new Date().getDay()];
+}
+
 export default function JournalPage() {
   const [activeTab, setActiveTab] = useState("journal");
-  const [selectedDay, setSelectedDay] = useState("Сб");
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [selectedDay, setSelectedDay] = useState(getTodayShortName());
   const [weekSections, setWeekSections] = useState<WeekSection[]>(initialWeekSections);
+  
+  // Swipe detection state
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const minSwipeDistance = 50;
+  
+  // Получаем дни для текущей недели
+  const weekDays = getWeekDays(weekOffset);
+  
+  // Обработчики свайпа
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+  
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+  
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      // Свайп влево — прошлые недели
+      setWeekOffset(prev => prev - 1);
+    } else if (isRightSwipe) {
+      // Свайп вправо — будущие недели (но не дальше текущей)
+      setWeekOffset(prev => Math.min(prev + 1, 0));
+    }
+  };
+  
+  // Навигация по неделям
+  const goToPreviousWeek = () => setWeekOffset(prev => prev - 1);
+  const goToNextWeek = () => setWeekOffset(prev => Math.min(prev + 1, 0));
+  const goToCurrentWeek = () => {
+    setWeekOffset(0);
+    setSelectedDay(getTodayShortName());
+  };
   
   // Состояние для модалки шаблонов
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
@@ -340,36 +436,83 @@ export default function JournalPage() {
         {/* Title */}
         <h1 className="text-3xl font-bold text-white mb-6">Дневник</h1>
 
-        {/* Calendar Strip */}
-        <div className="flex justify-between items-center">
-          {weekDays.map((day) => (
-            <button
-              key={day.shortName}
-              onClick={() => setSelectedDay(day.shortName)}
-              className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all ${
-                day.status === "today"
-                  ? "ring-2 ring-orange-500/50 bg-gray-800/50"
-                  : ""
+        {/* Calendar Strip with Navigation - Fixed width centered */}
+        <div className="mb-4 max-w-[400px] mx-auto relative">
+          {/* Week Navigation Header - Fixed arrows on sides */}
+          <div className="flex items-center justify-center mb-4 relative">
+            {/* Left arrow */}
+            <button 
+              onClick={goToPreviousWeek}
+              className="absolute -left-12 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-colors"
+              aria-label="Прошлая неделя"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            
+            {/* Center text */}
+            <button 
+              onClick={goToCurrentWeek}
+              className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                weekOffset === 0 
+                  ? "text-orange-500" 
+                  : "text-gray-400 hover:text-white hover:bg-gray-800"
               }`}
             >
-              <span className={`text-xs font-medium ${
-                day.status === "today" || selectedDay === day.shortName
-                  ? "text-orange-500"
-                  : "text-gray-500"
-              }`}>
-                {day.shortName}
-              </span>
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                  selectedDay === day.shortName
-                    ? "bg-orange-500 text-white"
-                    : getDayCircleStyle(day)
+              {formatWeekRange(weekOffset)}
+            </button>
+            
+            {/* Right arrow */}
+            <button 
+              onClick={goToNextWeek}
+              disabled={weekOffset === 0}
+              className={`absolute -right-12 w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${
+                weekOffset === 0 
+                  ? "text-gray-700 cursor-not-allowed" 
+                  : "text-gray-400 hover:text-white hover:bg-gray-800"
+              }`}
+              aria-label="Следующая неделя"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          </div>
+          
+          {/* Days Strip with Swipe */}
+          <div 
+            className="flex items-center select-none justify-between px-2"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+          >
+            {weekDays.map((day) => (
+              <button
+                key={day.shortName}
+                onClick={() => setSelectedDay(day.shortName)}
+                className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all ${
+                  day.status === "today" && weekOffset === 0
+                    ? "ring-2 ring-orange-500/50 bg-gray-800/50"
+                    : ""
                 }`}
               >
-                {getDayIndicator(day)}
-              </div>
-            </button>
-          ))}
+                <span className={`text-xs font-medium ${
+                  (day.status === "today" && weekOffset === 0) || selectedDay === day.shortName
+                    ? "text-orange-500"
+                    : "text-gray-500"
+                }`}>
+                  {day.shortName}
+                </span>
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                    selectedDay === day.shortName
+                      ? "bg-orange-500 text-white"
+                      : getDayCircleStyle(day)
+                  }`}
+                >
+                  {getDayIndicator(day)}
+                </div>
+              </button>
+            ))}
+          </div>
+          
         </div>
       </header>
 
