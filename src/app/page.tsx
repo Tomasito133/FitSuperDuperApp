@@ -450,17 +450,13 @@ export default function JournalPage() {
             {formatWeekRange(weekOffset)}
           </button>
           
-          {/* Days Strip with Swipe - Ultra compact with animation */}
+          {/* Days Strip with Swipe - Ultra compact */}
           <div 
-            className="flex items-center select-none overflow-hidden"
+            className="flex items-center select-none"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
           >
-            <div 
-              className="flex transition-transform duration-300 ease-out"
-              style={{ transform: `translateX(${-weekOffset * 10}px)` }}
-            >
             {weekDays.map((day) => (
               <button
                 key={day.shortName}
@@ -489,7 +485,6 @@ export default function JournalPage() {
                 </div>
               </button>
             ))}
-            </div>
           </div>
           
         </div>
