@@ -90,29 +90,6 @@ function getWeekDays(weekOffset: number = 0): DayStatus[] {
   return days;
 }
 
-// Форматирование диапазона недели для заголовка
-function formatWeekRange(weekOffset: number): string {
-  const today = new Date();
-  const dayOfWeek = today.getDay();
-  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  
-  const monday = new Date(today);
-  monday.setDate(today.getDate() + mondayOffset + weekOffset * 7);
-  
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  
-  const months = ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
-  
-  const mondayStr = `${monday.getDate()} ${months[monday.getMonth()]}`;
-  const sundayStr = `${sunday.getDate()} ${months[sunday.getMonth()]}`;
-  
-  if (weekOffset === 0) return "На этой неделе";
-  if (weekOffset === -1) return "На прошлой неделе";
-  if (weekOffset === 1) return "На следующей неделе";
-  return `${mondayStr} — ${sundayStr}`;
-}
-
 const currentWorkout = {
   label: "Сейчас",
   name: "Верх",
@@ -438,18 +415,6 @@ export default function JournalPage() {
 
         {/* Calendar Strip - Compact, swipe only */}
         <div className="mb-4 flex flex-col items-center">
-          {/* Week title */}
-          <button 
-            onClick={goToCurrentWeek}
-            className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-colors mb-3 ${
-              weekOffset === 0 
-                ? "text-orange-500" 
-                : "text-gray-400 hover:text-white hover:bg-gray-800"
-            }`}
-          >
-            {formatWeekRange(weekOffset)}
-          </button>
-          
           {/* Days Strip with Swipe - Ultra compact */}
           <div 
             className="flex items-center select-none"
