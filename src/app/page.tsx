@@ -461,9 +461,9 @@ export default function JournalPage() {
               <button
                 key={day.shortName}
                 onClick={() => setSelectedDay(day.shortName)}
-                className={`flex flex-col items-center gap-1 px-1.5 py-1 rounded-xl transition-all ${
+                className={`flex flex-col items-center gap-1 px-2 py-2 rounded-full transition-all ${
                   day.status === "today" && weekOffset === 0
-                    ? "ring-2 ring-orange-500/50 bg-gray-800/50"
+                    ? "ring-2 ring-orange-500/50 bg-orange-500/15"
                     : ""
                 }`}
               >
