@@ -443,7 +443,7 @@ export default function JournalPage() {
             {/* Left arrow */}
             <button 
               onClick={goToPreviousWeek}
-              className="absolute -left-12 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-colors"
+              className="absolute -left-10 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-colors"
               aria-label="Прошлая неделя"
             >
               <ChevronLeft className="w-6 h-6" />
@@ -465,7 +465,7 @@ export default function JournalPage() {
             <button 
               onClick={goToNextWeek}
               disabled={weekOffset === 0}
-              className={`absolute -right-12 w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${
+              className={`absolute -right-10 w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${
                 weekOffset === 0 
                   ? "text-gray-700 cursor-not-allowed" 
                   : "text-gray-400 hover:text-white hover:bg-gray-800"
