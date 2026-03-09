@@ -207,6 +207,7 @@ export default function JournalPage() {
   // Swipe detection state
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [slideDirection, setSlideDirection] = useState<"left" | "right" | null>(null);
   const minSwipeDistance = 50;
   
   // Получаем дни для текущей недели
@@ -215,6 +216,7 @@ export default function JournalPage() {
   // Обработчики свайпа
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
+    setSlideDirection(null);
     setTouchStart(e.targetTouches[0].clientX);
   };
   
@@ -230,16 +232,36 @@ export default function JournalPage() {
     
     if (isLeftSwipe) {
       // Свайп влево — будущие недели
-      setWeekOffset(prev => prev + 1);
+      setSlideDirection("left");
+      setTimeout(() => {
+        setWeekOffset(prev => prev + 1);
+        setSlideDirection(null);
+      }, 150);
     } else if (isRightSwipe) {
       // Свайп вправо — прошлые недели
-      setWeekOffset(prev => prev - 1);
+      setSlideDirection("right");
+      setTimeout(() => {
+        setWeekOffset(prev => prev - 1);
+        setSlideDirection(null);
+      }, 150);
     }
   };
   
   // Навигация по неделям
-  const goToPreviousWeek = () => setWeekOffset(prev => prev - 1);
-  const goToNextWeek = () => setWeekOffset(prev => prev + 1);
+  const goToPreviousWeek = () => {
+    setSlideDirection("right");
+    setTimeout(() => {
+      setWeekOffset(prev => prev - 1);
+      setSlideDirection(null);
+    }, 150);
+  };
+  const goToNextWeek = () => {
+    setSlideDirection("left");
+    setTimeout(() => {
+      setWeekOffset(prev => prev + 1);
+      setSlideDirection(null);
+    }, 150);
+  };
   const goToCurrentWeek = () => {
     setWeekOffset(0);
     setSelectedDay(getTodayShortName());
@@ -415,9 +437,21 @@ export default function JournalPage() {
 
         {/* Calendar Strip - Compact, swipe only */}
         <div className="mb-4 flex flex-col items-center">
+          {/* Today button - show when not on current week */}
+          {weekOffset !== 0 && (
+            <button
+              onClick={goToCurrentWeek}
+              className="text-sm font-medium px-4 py-1.5 rounded-full bg-orange-500/20 text-orange-500 hover:bg-orange-500/30 transition-colors mb-3"
+            >
+              Сегодня
+            </button>
+          )}
+          
           {/* Days Strip with Swipe - Ultra compact */}
           <div 
-            className="flex items-center select-none"
+            className={`flex items-center select-none transition-transform duration-150 ease-out ${
+              slideDirection === "left" ? "-translate-x-4 opacity-70" : ""
+            } ${slideDirection === "right" ? "translate-x-4 opacity-70" : ""}`}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
