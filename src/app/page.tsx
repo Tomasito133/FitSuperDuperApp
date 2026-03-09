@@ -252,11 +252,11 @@ export default function JournalPage() {
     const isRightSwipe = distance < -minSwipeDistance;
     
     if (isLeftSwipe) {
-      // Свайп влево — прошлые недели
-      setWeekOffset(prev => prev - 1);
-    } else if (isRightSwipe) {
-      // Свайп вправо — будущие недели (но не дальше текущей)
+      // Свайп влево — будущие недели (но не дальше текущей)
       setWeekOffset(prev => Math.min(prev + 1, 0));
+    } else if (isRightSwipe) {
+      // Свайп вправо — прошлые недели
+      setWeekOffset(prev => prev - 1);
     }
   };
   
