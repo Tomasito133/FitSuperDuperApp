@@ -157,6 +157,16 @@
   }
 }
 
+/* Hide scrollbar on all pages */
+::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Slide up animation for modal */
 @keyframes slide-up {
   from {
