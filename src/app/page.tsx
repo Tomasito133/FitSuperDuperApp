@@ -437,8 +437,8 @@ export default function JournalPage() {
 
         {/* Calendar Strip - Compact, swipe only */}
         <div className="mb-4 flex flex-col items-center">
-          {/* Today button row - aligned right */}
-          <div className="w-full max-w-[360px] flex justify-end mb-2">
+          {/* Today button row - aligned right with fixed height */}
+          <div className="w-full max-w-[360px] flex justify-end mb-2 min-h-[36px]">
             {weekOffset !== 0 && (
               <button
                 onClick={goToCurrentWeek}
