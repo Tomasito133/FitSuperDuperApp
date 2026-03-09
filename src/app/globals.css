@@ -180,3 +180,13 @@ html {
 .animate-slide-up {
   animation: slide-up 0.3s ease-out forwards;
 }
+
+/* Hide scrollbar on all pages */
+::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
