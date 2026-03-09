@@ -436,16 +436,9 @@ export default function JournalPage() {
         <h1 className="text-3xl font-bold text-white mb-6">Дневник</h1>
 
         {/* Calendar Strip - Compact, swipe only */}
-        <div className="mb-4 flex flex-col items-center">
-          {/* Today button - show when not on current week */}
-          {weekOffset !== 0 && (
-            <button
-              onClick={goToCurrentWeek}
-              className="text-sm font-medium px-4 py-1.5 rounded-full bg-orange-500/20 text-orange-500 hover:bg-orange-500/30 transition-colors mb-3"
-            >
-              Сегодня
-            </button>
-          )}
+        <div className="mb-4 flex items-center justify-center gap-3">
+          {/* Spacer for alignment when Today button is hidden */}
+          <div className="w-[72px]" />
           
           {/* Days Strip with Swipe - Ultra compact */}
           <div 
@@ -486,6 +479,17 @@ export default function JournalPage() {
             ))}
           </div>
           
+          {/* Today button - show when not on current week */}
+          <div className="w-[72px] flex justify-end">
+            {weekOffset !== 0 && (
+              <button
+                onClick={goToCurrentWeek}
+                className="text-sm font-medium px-3 py-1.5 rounded-full bg-orange-500/20 text-orange-500 hover:bg-orange-500/30 transition-colors"
+              >
+                Сегодня
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
