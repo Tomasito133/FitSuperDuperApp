@@ -436,49 +436,23 @@ export default function JournalPage() {
         {/* Title */}
         <h1 className="text-3xl font-bold text-white mb-6">Дневник</h1>
 
-        {/* Calendar Strip with Navigation - Compact centered */}
+        {/* Calendar Strip - Compact, swipe only */}
         <div className="mb-4 flex flex-col items-center">
-          {/* Week Navigation Header with arrows inline */}
-          <div className="flex items-center justify-center gap-2 mb-4">
-            {/* Left arrow */}
-            <button 
-              onClick={goToPreviousWeek}
-              className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-colors"
-              aria-label="Прошлая неделя"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-            
-            {/* Center text */}
-            <button 
-              onClick={goToCurrentWeek}
-              className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-colors min-w-[120px] text-center ${
-                weekOffset === 0 
-                  ? "text-orange-500" 
-                  : "text-gray-400 hover:text-white hover:bg-gray-800"
-              }`}
-            >
-              {formatWeekRange(weekOffset)}
-            </button>
-            
-            {/* Right arrow */}
-            <button 
-              onClick={goToNextWeek}
-              disabled={weekOffset === 0}
-              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${
-                weekOffset === 0 
-                  ? "text-gray-700 cursor-not-allowed" 
-                  : "text-gray-400 hover:text-white hover:bg-gray-800"
-              }`}
-              aria-label="Следующая неделя"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
-          </div>
+          {/* Week title */}
+          <button 
+            onClick={goToCurrentWeek}
+            className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-colors mb-3 ${
+              weekOffset === 0 
+                ? "text-orange-500" 
+                : "text-gray-400 hover:text-white hover:bg-gray-800"
+            }`}
+          >
+            {formatWeekRange(weekOffset)}
+          </button>
           
-          {/* Days Strip with Swipe - Compact */}
+          {/* Days Strip with Swipe - Ultra compact */}
           <div 
-            className="flex items-center select-none gap-1"
+            className="flex items-center select-none"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
@@ -487,7 +461,7 @@ export default function JournalPage() {
               <button
                 key={day.shortName}
                 onClick={() => setSelectedDay(day.shortName)}
-                className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all ${
+                className={`flex flex-col items-center gap-1 px-1.5 py-1 rounded-xl transition-all ${
                   day.status === "today" && weekOffset === 0
                     ? "ring-2 ring-orange-500/50 bg-gray-800/50"
                     : ""
