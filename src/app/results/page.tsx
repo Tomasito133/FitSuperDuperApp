@@ -279,19 +279,6 @@ export default function ResultsPage() {
             </button>
           </div>
         </section>
-                  }}
-                />
-                <span className="text-gray-500 text-xs">
-                  {entry.date.split('-')[2]}
-                </span>
-              </div>
-            ))}
-          </div>
-          
-          <button className="w-full bg-red-500 text-white font-medium py-3 rounded-xl">
-            Записать
-          </button>
-        </section>
         
         {/* Фотографии */}
         <section className="bg-[#1c1c1e] rounded-2xl p-4 mb-4">
