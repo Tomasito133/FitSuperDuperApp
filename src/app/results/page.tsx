@@ -229,12 +229,12 @@ export default function ResultsPage() {
           </div>
         </section>
         
-        {/* Весы */}
+        {/* Весы - Обновлено */}
         <section className="bg-[#1c1c1e] rounded-2xl p-4 mb-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Scale className="w-5 h-5 text-gray-400" />
-              <h2 className="text-white text-lg font-semibold">Весы</h2>
+              <h2 className="text-white text-lg font-semibold">Весы v2</h2>
             </div>
             <button className="text-gray-400">
               <MoreHorizontal className="w-5 h-5" />
