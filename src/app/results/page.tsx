@@ -272,7 +272,7 @@ export default function ResultsPage() {
           </div>
           
           {/* Footer: timestamp + button */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pt-4 border-t border-gray-800">
             <span className="text-gray-500 text-sm">Сегодня, 00:11</span>
             <button className="bg-orange-500 text-white font-medium px-6 py-2 rounded-full">
               Записать
