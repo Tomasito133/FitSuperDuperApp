@@ -10,7 +10,8 @@ import {
   BarChart3,
   Settings,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Ruler
 } from "lucide-react";
 
 // Типы данных
@@ -281,7 +282,7 @@ export default function ResultsPage() {
         </section>
         
         {/* Фотографии */}
-        <section className="bg-[#1c1c1e] rounded-2xl p-4">
+        <section className="bg-[#1c1c1e] rounded-2xl p-4 mb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-white text-lg font-semibold">Фотографии</h2>
             <button className="text-gray-400">
@@ -299,6 +300,92 @@ export default function ResultsPage() {
                 className="aspect-square bg-[#2c2c2e] rounded-xl"
               />
             ))}
+          </div>
+        </section>
+        
+        {/* Замеры */}
+        <section className="bg-[#1c1c1e] rounded-2xl p-4 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Ruler className="w-5 h-5 text-gray-400" />
+              <h2 className="text-white text-lg font-semibold">Замеры</h2>
+            </div>
+            <button className="text-gray-400">
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <div className="space-y-0">
+            {/* Однозначные замеры */}
+            {[
+              { label: "Шея", key: "neck" },
+              { label: "Плечи", key: "shoulders" },
+              { label: "Грудь", key: "chest" },
+              { label: "Талия", key: "waist" },
+              { label: "Живот", key: "abdomen" },
+              { label: "Таз", key: "hips" },
+            ].map((item) => (
+              <div key={item.key} className="flex items-center justify-between py-3 border-b border-gray-800">
+                <span className="text-gray-400 text-base">{item.label}</span>
+                <span className="text-white text-base">—</span>
+              </div>
+            ))}
+            
+            {/* Парные замеры (лево/право) */}
+            {[
+              { label: "Предплечье", key: "forearm" },
+              { label: "Бицепс", key: "bicep" },
+              { label: "Бедро", key: "thigh" },
+              { label: "Икры", key: "calves" },
+            ].map((item) => (
+              <div key={item.key} className="flex items-center justify-between py-3 border-b border-gray-800">
+                <span className="text-gray-400 text-base">{item.label}</span>
+                <div className="flex gap-4">
+                  <span className="text-white text-base">—</span>
+                  <span className="text-white text-base">—</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+        
+        {/* Статистика */}
+        <section className="bg-[#1c1c1e] rounded-2xl p-4 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-white text-lg font-semibold">Статистика</h2>
+            <button className="text-gray-400">
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-[#2c2c2e] rounded-xl p-4">
+              <span className="text-gray-400 text-sm">Тренировок</span>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-white text-2xl font-bold">10</span>
+                <span className="text-gray-400 text-sm">/мес</span>
+              </div>
+            </div>
+            <div className="bg-[#2c2c2e] rounded-xl p-4">
+              <span className="text-gray-400 text-sm">Общее время</span>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-white text-2xl font-bold">12</span>
+                <span className="text-gray-400 text-sm">ч</span>
+              </div>
+            </div>
+            <div className="bg-[#2c2c2e] rounded-xl p-4">
+              <span className="text-gray-400 text-sm">Подходов</span>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-white text-2xl font-bold">156</span>
+              </div>
+            </div>
+            <div className="bg-[#2c2c2e] rounded-xl p-4">
+              <span className="text-gray-400 text-sm">Сожжено</span>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-white text-2xl font-bold">3 840</span>
+                <span className="text-gray-400 text-sm">ккал</span>
+              </div>
+            </div>
           </div>
         </section>
       </main>
