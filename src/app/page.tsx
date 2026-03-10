@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Plus, Trophy, Dumbbell, BarChart3, Settings, MoreHorizontal, Zap, Check, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
-import { AuthButton, AuthGuard } from "@/components/AuthButton";
+import { AuthGuard } from "@/components/AuthButton";
 
 // Типы данных
 interface Set {
@@ -426,7 +426,6 @@ export default function JournalPage() {
             <Link href="/templates" className="text-orange-500 font-medium text-base hover:text-orange-400 transition-colors">
               Шаблоны
             </Link>
-            <AuthButton />
           </div>
           <button 
             onClick={() => setIsTemplatesOpen(true)}

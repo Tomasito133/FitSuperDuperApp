@@ -43,7 +43,12 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     <>
       {isSignedIn ? children : (
         <div className="flex flex-col items-center justify-center py-20 text-center px-4">
-          <p className="text-gray-400 text-lg mb-6">Войди, чтобы сохранять тренировки</p>
+          <p className="text-gray-400 text-lg mb-6">
+            <Link href="/sign-in" className="text-orange-500 hover:text-orange-400 transition-colors">
+              Войди
+            </Link>
+            , чтобы сохранять тренировки
+          </p>
           <Link 
             href="/sign-in"
             className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-3 rounded-xl transition-colors"
