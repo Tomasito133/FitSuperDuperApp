@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Plus, Trophy, Dumbbell, BarChart3, Settings, MoreHorizontal, Zap, Check, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
-import { AuthGuard } from "@/components/AuthButton";
 
 // Типы данных
 interface Set {
@@ -422,15 +421,12 @@ export default function JournalPage() {
       <header className="px-5 pt-6 pb-2">
         {/* Templates row */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <Link href="/templates" className="text-orange-500 font-medium text-base hover:text-orange-400 transition-colors">
-              Шаблоны
-            </Link>
-          </div>
+          <Link href="/templates" className="text-orange-500 font-medium text-base hover:text-orange-400 transition-colors">
+            Шаблоны
+          </Link>
           <button 
             onClick={() => setIsTemplatesOpen(true)}
             className="w-8 h-8 flex items-center justify-center text-orange-500"
-            aria-label="Создать тренировку"
           >
             <Plus className="w-6 h-6" />
           </button>
@@ -496,7 +492,6 @@ export default function JournalPage() {
 
       {/* Main Content */}
       <main className="px-5 pb-28 pt-4">
-        <AuthGuard>
         {/* Current Workout Button */}
         <Link href="/workout/current" className="block mb-6">
           <div className="bg-orange-500 rounded-2xl p-4 flex items-center gap-3">
@@ -603,7 +598,6 @@ export default function JournalPage() {
             </div>
           </section>
         ))}
-        </AuthGuard>
       </main>
 
       {/* Bottom Navigation */}
