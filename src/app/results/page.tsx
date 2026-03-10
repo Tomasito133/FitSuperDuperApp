@@ -11,7 +11,8 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Ruler
+  Ruler,
+  Scale
 } from "lucide-react";
 
 // Типы данных
@@ -231,42 +232,53 @@ export default function ResultsPage() {
         {/* Весы */}
         <section className="bg-[#1c1c1e] rounded-2xl p-4 mb-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white text-lg font-semibold">Весы</h2>
+            <div className="flex items-center gap-2">
+              <Scale className="w-5 h-5 text-gray-400" />
+              <h2 className="text-white text-lg font-semibold">Весы</h2>
+            </div>
             <button className="text-gray-400">
               <MoreHorizontal className="w-5 h-5" />
             </button>
           </div>
           
           <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="bg-[#2c2c2e] rounded-xl p-4">
+            {/* Вес */}
+            <div>
               <span className="text-gray-400 text-sm">Вес</span>
               <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-white text-2xl font-bold">
+                <span className="text-white text-3xl font-bold">
                   {weightHistory[weightHistory.length - 1]?.weight || '--'}
                 </span>
-                <span className="text-gray-400 text-sm">кг</span>
+                <span className="text-gray-400 text-base">кг</span>
+              </div>
+              <div className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 bg-orange-500/20 rounded-full">
+                <span className="text-orange-500 text-xs font-medium">+{((weightHistory[weightHistory.length - 1]?.weight || 0) - (weightHistory[weightHistory.length - 2]?.weight || 0)).toFixed(1)}</span>
               </div>
             </div>
-            <div className="bg-[#2c2c2e] rounded-xl p-4">
+            
+            {/* Процент жира */}
+            <div>
               <span className="text-gray-400 text-sm">Процент жира</span>
               <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-white text-2xl font-bold">
+                <span className="text-white text-3xl font-bold">
                   {weightHistory[weightHistory.length - 1]?.fatPercent || '--'}
                 </span>
-                <span className="text-gray-400 text-sm">%</span>
+                <span className="text-gray-400 text-base">%</span>
+              </div>
+              <div className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 bg-orange-500/20 rounded-full">
+                <span className="text-orange-500 text-xs font-medium">+{((weightHistory[weightHistory.length - 1]?.fatPercent || 0) - (weightHistory[weightHistory.length - 2]?.fatPercent || 0)).toFixed(1)}</span>
               </div>
             </div>
           </div>
           
-          {/* График веса (упрощённый) */}
-          <div className="h-24 flex items-end gap-2 mb-4 px-2">
-            {weightHistory.map((entry, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div 
-                  className="w-full bg-red-500 rounded-t"
-                  style={{ 
-                    height: `${((entry.weight - 80) / 10) * 100}%`,
-                    minHeight: '8px'
+          {/* Footer: timestamp + button */}
+          <div className="flex items-center justify-between">
+            <span className="text-gray-500 text-sm">Сегодня, 00:11</span>
+            <button className="bg-orange-500 text-white font-medium px-6 py-2 rounded-full">
+              Записать
+            </button>
+          </div>
+        </section>
                   }}
                 />
                 <span className="text-gray-500 text-xs">
