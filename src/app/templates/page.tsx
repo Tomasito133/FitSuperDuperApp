@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { 
   ChevronLeft, 
   Plus, 
   Trash2, 
-  MoreHorizontal,
   Dumbbell,
   BookOpen,
   BarChart3,
@@ -97,6 +97,7 @@ function saveTemplates(templates: WorkoutTemplate[]): void {
 }
 
 export default function TemplatesPage() {
+  const router = useRouter();
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
@@ -131,7 +132,7 @@ export default function TemplatesPage() {
   };
 
   const handleCreateWorkoutFromTemplate = (template: WorkoutTemplate) => {
-    const newWorkoutId = Date.now().toString();
+    const newWorkoutId = `workout_${Date.now()}`;
     const newWorkout = {
       id: newWorkoutId,
       name: template.name,
@@ -141,7 +142,7 @@ export default function TemplatesPage() {
     };
 
     localStorage.setItem(`workout_${newWorkoutId}`, JSON.stringify(newWorkout));
-    window.location.href = `/workout/${newWorkoutId}`;
+    router.push(`/workout/${newWorkoutId}`);
   };
 
   return (

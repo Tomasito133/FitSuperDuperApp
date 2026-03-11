@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Trophy, Dumbbell, BarChart3, Settings, MoreHorizontal, Zap, Check, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Plus, Trophy, Dumbbell, BarChart3, Settings, MoreHorizontal, Zap, Check, BookOpen } from "lucide-react";
 
 // Типы данных
 interface Set {
@@ -199,7 +200,7 @@ function getTodayShortName(): string {
 }
 
 export default function JournalPage() {
-  const [activeTab, setActiveTab] = useState("journal");
+  const router = useRouter();
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDay, setSelectedDay] = useState(getTodayShortName());
   const [weekSections, setWeekSections] = useState<WeekSection[]>(initialWeekSections);
@@ -247,21 +248,6 @@ export default function JournalPage() {
     }
   };
   
-  // Навигация по неделям
-  const goToPreviousWeek = () => {
-    setSlideDirection("right");
-    setTimeout(() => {
-      setWeekOffset(prev => prev - 1);
-      setSlideDirection(null);
-    }, 150);
-  };
-  const goToNextWeek = () => {
-    setSlideDirection("left");
-    setTimeout(() => {
-      setWeekOffset(prev => prev + 1);
-      setSlideDirection(null);
-    }, 150);
-  };
   const goToCurrentWeek = () => {
     setWeekOffset(0);
     setSelectedDay(getTodayShortName());
@@ -269,7 +255,7 @@ export default function JournalPage() {
   
   // Состояние для модалки шаблонов
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
-  const [templates, setTemplates] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
   const [pastWorkouts, setPastWorkouts] = useState<Workout[]>([]);
 
   // Состояние для редактирования названия тренировки
@@ -341,7 +327,7 @@ export default function JournalPage() {
   
   // Создать тренировку из шаблона
   const handleCreateFromTemplate = (template: WorkoutTemplate) => {
-    const newWorkoutId = Date.now().toString();
+    const newWorkoutId = `workout_${Date.now()}`;
     const newWorkout: WorkoutDetail = {
       id: newWorkoutId,
       name: template.name,
@@ -354,7 +340,7 @@ export default function JournalPage() {
     setIsTemplatesOpen(false);
     
     // Переходим на страницу новой тренировки
-    window.location.href = `/workout/${newWorkoutId}`;
+    router.push(`/workout/${newWorkoutId}`);
   };
 
   // Начать редактирование названия
@@ -653,7 +639,7 @@ export default function JournalPage() {
                 {templates.length === 0 ? (
                   <p className="text-gray-500 text-center py-4">Нет шаблонов</p>
                 ) : (
-                  templates.map((template: any) => (
+                  templates.map((template) => (
                     <button
                       key={template.id}
                       onClick={() => handleCreateFromTemplate(template)}

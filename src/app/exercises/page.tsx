@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, MoreHorizontal, Plus, BookOpen, BarChart3, Dumbbell, Settings, X, ChevronRight } from "lucide-react";
+import { Search, MoreHorizontal, Plus, BookOpen, BarChart3, Dumbbell, Settings, X } from "lucide-react";
 
 interface Exercise {
   id: string;

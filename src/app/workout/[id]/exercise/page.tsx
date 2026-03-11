@@ -174,13 +174,13 @@ export default function ExerciseSetsPage() {
   const [completedSets, setCompletedSets] = useState<number[]>([]);
   const [editingTimer, setEditingTimer] = useState<number | null>(null);
   const [exercise, setExercise] = useState<Exercise>(() => {
-    // Пробуем загрузить из localStorage
-    const saved = loadFromStorage(workoutId, exerciseId);
-    if (saved) {
-      return saved;
+    // lazy initialization — загружаем данные только один раз при монтировании
+    // useEffect не используется для начальной загрузки чтобы избежать impure function
+    if (typeof window === 'undefined') {
+      return getExerciseById(exerciseId);
     }
-    // Если нет в localStorage, берём из базы
-    return getExerciseById(exerciseId);
+    const saved = loadFromStorage(workoutId, exerciseId);
+    return saved || getExerciseById(exerciseId);
   });
 
   // Сохраняем при изменении exercise
@@ -188,14 +188,20 @@ export default function ExerciseSetsPage() {
     saveToStorage(workoutId, exerciseId, exercise);
   }, [exercise, workoutId, exerciseId]);
 
-  // Обновляем упражнение при изменении ID
+  // Обновляем упражнение при изменении ID — используем отдельный effect
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const saved = loadFromStorage(workoutId, exerciseId);
-    if (saved) {
-      setExercise(saved);
-    } else {
-      setExercise(getExerciseById(exerciseId));
-    }
+    const newExercise = saved || getExerciseById(exerciseId);
+    
+    // Используем функциональное обновление чтобы избежать прямого setState
+    setExercise(prev => {
+      if (prev.id !== newExercise.id) {
+        return newExercise;
+      }
+      return prev;
+    });
     // Сбрасываем состояние для нового упражнения
     setIsActive(false);
     setWorkoutTime(0);

@@ -227,7 +227,7 @@ export default function WorkoutDetailPage() {
   
   const [workout, setWorkout] = useState<WorkoutDetail>(() => {
     const saved = loadFromStorage(workoutId);
-    let workoutData = saved || { ...mockWorkout, id: workoutId };
+    const workoutData = saved || { ...mockWorkout, id: workoutId };
     
     // Подтягиваем актуальные данные подходов из localStorage упражнений
     workoutData.exercises = workoutData.exercises.map(ex => {
@@ -267,7 +267,7 @@ export default function WorkoutDetailPage() {
     return () => window.removeEventListener("focus", handleFocus);
   }, [workoutId]);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState("1:18:32");
+  const [elapsedTime] = useState("1:18:32");
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState("");
   const [searchQuery, setSearchQuery] = useState("");

@@ -22,12 +22,6 @@ interface WeightEntry {
   fatPercent: number | null;
 }
 
-interface PhotoEntry {
-  id: string;
-  date: string;
-  url: string;
-}
-
 // Мок-данные для истории тренировок по датам
 const workoutHistory: Record<string, number> = {
   "2026-03-01": 1,
