@@ -1,19 +1,14 @@
-// eslint.config.js - простой конфиг для ESLint 9
-const js = require("@eslint/js");
+// eslint.config.js - для Next.js
+const nextConfig = require("./next.config.js");
 
-module.exports = [
-  {
-    ignores: [".next", "out", "build", "node_modules"],
+const eslintConfig = {
+  extends: ["next/core-web-vitals"],
+  rules: {
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-explicit-any": "off",
+    "react-hooks/purity": "off",
+    "react-hooks/set-state-in-effect": "off",
   },
-  {
-    files: ["**/*.{js,ts,tsx}"],
-    languageOptions: {
-      ecmaVersion: 2020,
-      sourceType: "module",
-    },
-    rules: {
-      "no-unused-vars": "off",
-      "no-explicit-any": "off",
-    },
-  },
-];
+};
+
+module.exports = eslintConfig;
