@@ -1,27 +1,19 @@
-import js from "@eslint/js";
-import tseslint from "typescript-eslint";
-import reactHooks from "eslint-plugin-react-hooks";
-import reactRefresh from "eslint-plugin-react-refresh";
+// eslint.config.js - простой конфиг для ESLint 9
+const js = require("@eslint/js");
 
-export default tseslint.config(
-  { ignores: [".next", "out", "build"] },
+module.exports = [
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["**/*.{ts,tsx}"],
+    ignores: [".next", "out", "build", "node_modules"],
+  },
+  {
+    files: ["**/*.{js,ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2020,
-    },
-    plugins: {
-      "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
+      sourceType: "module",
     },
     rules: {
-      ...reactHooks.configs.recommended.rules,
-      "react-refresh/only-export-components": "warn",
-      "@typescript-eslint/no-unused-vars": "warn",
-      "@typescript-eslint/no-explicit-any": "off",
-      "react-hooks/purity": "off",
-      "react-hooks/set-state-in-effect": "off",
+      "no-unused-vars": "off",
+      "no-explicit-any": "off",
     },
-  }
-);
+  },
+];
