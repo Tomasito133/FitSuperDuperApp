@@ -136,7 +136,7 @@ export default function ResultsPage() {
             <MoreHorizontal className="w-6 h-6" />
           </button>
           <h1 className="text-xl font-semibold text-white">Результаты</h1>
-          <button className="w-10 h-10 flex items-center justify-center text-red-500">
+          <button className="w-10 h-10 flex items-center justify-center text-orange-500">
             <Plus className="w-6 h-6" />
           </button>
         </div>
@@ -192,7 +192,7 @@ export default function ResultsPage() {
                       className={`
                         aspect-square flex items-center justify-center text-sm
                         ${!isCurrentMonth ? 'text-gray-600' : hasWorkout ? 'text-white' : 'text-gray-400'}
-                        ${hasWorkout ? 'bg-red-500 rounded-full' : ''}
+                        ${hasWorkout ? 'bg-orange-500 rounded-full' : ''}
                       `}
                     >
                       {day.date}
@@ -215,7 +215,7 @@ export default function ResultsPage() {
                   <path
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     fill="none"
-                    stroke="#ef4444"
+                    stroke="#f97316"
                     strokeWidth="3"
                     strokeDasharray={`${progressPercent}, 100`}
                   />
@@ -392,19 +392,19 @@ export default function ResultsPage() {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#1c1c1e] border-t border-gray-800 px-2 pt-2 pb-6">
         <div className="flex justify-around items-center">
-          <Link href="/" className="flex flex-col items-center gap-1 py-2 px-3 text-gray-500 hover:text-red-500 transition-colors">
+          <Link href="/" className="flex flex-col items-center gap-1 py-2 px-3 text-gray-500 hover:text-orange-500 transition-colors">
             <BookOpen className="w-6 h-6" />
             <span className="text-xs font-medium">Дневник</span>
           </Link>
-          <div className="flex flex-col items-center gap-1 py-2 px-3 text-red-500">
+          <div className="flex flex-col items-center gap-1 py-2 px-3 text-orange-500">
             <BarChart3 className="w-6 h-6" />
             <span className="text-xs font-medium">Результаты</span>
           </div>
-          <Link href="/exercises" className="flex flex-col items-center gap-1 py-2 px-3 text-gray-500 hover:text-red-500 transition-colors">
+          <Link href="/exercises" className="flex flex-col items-center gap-1 py-2 px-3 text-gray-500 hover:text-orange-500 transition-colors">
             <Dumbbell className="w-6 h-6" />
             <span className="text-xs font-medium">Упражнения</span>
           </Link>
-          <Link href="/settings" className="flex flex-col items-center gap-1 py-2 px-3 text-gray-500 hover:text-red-500 transition-colors">
+          <Link href="/settings" className="flex flex-col items-center gap-1 py-2 px-3 text-gray-500 hover:text-orange-500 transition-colors">
             <Settings className="w-6 h-6" />
             <span className="text-xs font-medium">Настройки</span>
           </Link>
