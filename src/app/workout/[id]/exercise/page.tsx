@@ -313,7 +313,7 @@ export default function ExerciseSetsPage() {
     <div className="max-w-md mx-auto bg-gray-950 min-h-screen shadow-xl flex flex-col text-white">
       {/* Header */}
       <header className={`px-6 py-4 text-center transition-colors ${
-        isResting ? "bg-red-600" : "bg-orange-500"
+        isResting ? "bg-orange-600" : "bg-orange-500"
       }`}>
         <div className="flex items-center justify-between mb-2">
           <Link 
@@ -434,7 +434,7 @@ export default function ExerciseSetsPage() {
                   {!isCompleted && (
                     <button
                       onClick={() => deleteSet(set.id)}
-                      className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                      className="p-2 text-gray-500 hover:text-orange-500 hover:bg-orange-500/10 rounded-lg transition-colors"
                       title="Удалить"
                     >
                       <Trash2 className="w-5 h-5" />
@@ -463,7 +463,7 @@ export default function ExerciseSetsPage() {
             onClick={handleMainButton}
             className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-colors ${
               isResting 
-                ? "bg-red-500 hover:bg-red-600 shadow-red-500/30" 
+                ? "bg-orange-500 hover:bg-orange-600 shadow-orange-500/30" 
                 : "bg-orange-500 hover:bg-orange-600 shadow-orange-500/30"
             }`}
           >

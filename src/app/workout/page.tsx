@@ -206,7 +206,7 @@ export default function ActiveWorkoutPage() {
                       e.stopPropagation();
                       handleDeleteExercise(exercise.id);
                     }}
-                    className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                    className="p-2 text-gray-500 hover:text-orange-500 hover:bg-orange-500/10 rounded-lg transition-colors"
                     title="Удалить"
                   >
                     <Trash2 className="w-5 h-5" />

@@ -569,7 +569,7 @@ export default function JournalPage() {
                             e.stopPropagation();
                             handleCancelEditing();
                           }}
-                          className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg"
+                          className="p-2 text-orange-500 hover:bg-orange-500/10 rounded-lg"
                         >
                           ✕
                         </button>
